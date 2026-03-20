@@ -4,7 +4,10 @@
 	import ScrollNarrative from '$lib/components/scroll/ScrollNarrative.svelte';
 	import NarrativeSection from '$lib/components/scroll/NarrativeSection.svelte';
 	import ConfigHeatmap from '$lib/components/charts/ConfigHeatmap.svelte';
+	import ConfigHeatmapInteractive from '$lib/components/charts/ConfigHeatmapInteractive.svelte';
+	import PowerTimeseries from '$lib/components/charts/PowerTimeseries.svelte';
 	import MethodologyLink from '$lib/components/charts/MethodologyLink.svelte';
+	import ExpandableDetail from '$lib/components/ExpandableDetail.svelte';
 	import type { PageData } from './$types';
 
 	const { data }: { data: PageData } = $props();
@@ -18,6 +21,9 @@
 
 	// Beat 2: heatmap reveal progress (0-1)
 	let heatmapReveal = $state(0);
+
+	// Beat 4: timeseries scroll progress (0-1)
+	let timeseriesProgress = $state(0);
 
 	// Beat 1 counter animation: count from 1 to energyRatio over ~1.5s
 	function runCounterAnimation() {
@@ -74,6 +80,29 @@
 		}
 	}
 
+	// Beat 4: track timeseries scroll progress
+	let beat4El: HTMLElement | null = null;
+
+	function trackBeat4Progress() {
+		if (!beat4El || !browser) return;
+
+		const rect = beat4El.getBoundingClientRect();
+		const windowH = window.innerHeight;
+
+		if (rect.bottom <= 0 && rect.top <= 0) {
+			timeseriesProgress = 1;
+		} else if (rect.top > windowH) {
+			timeseriesProgress = 0;
+		} else {
+			const totalScroll = rect.height - windowH;
+			if (totalScroll <= 0) {
+				timeseriesProgress = rect.top < windowH * 0.5 ? 1 : 0;
+			} else {
+				timeseriesProgress = Math.max(0, Math.min(1, (-rect.top) / totalScroll));
+			}
+		}
+	}
+
 	onMount(() => {
 		if (!browser) return;
 
@@ -87,11 +116,15 @@
 			setTimeout(() => { equivalenceVisible = true; }, 1200);
 		}, 300);
 
-		// Set up scroll tracking for Beat 2
-		const handleScroll = () => trackBeat2Progress();
+		// Set up scroll tracking for Beat 2 and Beat 4
+		const handleScroll = () => {
+			trackBeat2Progress();
+			trackBeat4Progress();
+		};
 		window.addEventListener('scroll', handleScroll, { passive: true });
-		// Initial check
+		// Initial checks
 		trackBeat2Progress();
+		trackBeat4Progress();
 
 		return () => {
 			clearTimeout(hookTimer);
@@ -118,6 +151,11 @@
 		ro.observe(heatmapContainerEl);
 		return () => ro.disconnect();
 	});
+
+	// Beat 5: deployment bar chart derived values
+	const deploymentMax = $derived(
+		Math.max(...data.deploymentData.map((d) => d.energyPerToken))
+	);
 </script>
 
 <svelte:head>
@@ -214,44 +252,234 @@
 	</div>
 
 	<!-- ========================================================
-	     Beat 3: Exploration — interactive heatmap placeholder
+	     Beat 3: Exploration — interactive heatmap
+	     Two-part layout: short intro + full interactive section
 	     ======================================================== -->
 	<NarrativeSection id="beat-3">
-		<div class="placeholder-beat">
-			<h2 class="placeholder-beat__heading">Explore the full landscape</h2>
-			<p class="placeholder-beat__body">
-				Interactive configuration explorer coming in the next phase. Filter by backend
-				(PyTorch / vLLM / TensorRT), attention type, and metric.
+		<div class="beat-3__intro">
+			<h2 class="beat-3__heading">Now explore for yourself</h2>
+			<p class="beat-3__body">
+				Filter by inference backend (PyTorch, vLLM, TensorRT) and attention implementation.
+				Click any cell to see the full configuration breakdown. The {data.energyRatio}x gap
+				holds across every combination.
 			</p>
-			<p class="placeholder-beat__coming-soon">Phase 3 &mdash; coming soon</p>
 		</div>
 	</NarrativeSection>
 
+	<!-- Unpinned full-height section: free interaction with heatmap -->
+	<section id="beat-3-explorer" class="beat-3-explorer">
+		<div class="beat-3-explorer__inner">
+			<ConfigHeatmapInteractive allResults={data.allResults} />
+		</div>
+	</section>
+
 	<!-- ========================================================
-	     Beat 4: Depth — power timeseries placeholder
+	     Beat 4: Depth — animated power timeseries
 	     ======================================================== -->
-	<NarrativeSection id="beat-4">
-		<div class="placeholder-beat">
-			<h2 class="placeholder-beat__heading">Watch energy draw over time</h2>
-			<p class="placeholder-beat__body">
-				Animated side-by-side power timeseries showing worst-case vs best-case inference.
-				The difference is physical — you can see it as motion.
-			</p>
-			<p class="placeholder-beat__coming-soon">Phase 3 &mdash; coming soon</p>
-		</div>
-	</NarrativeSection>
+	<div bind:this={beat4El}>
+		<NarrativeSection id="beat-4">
+			{#snippet graphic()}
+				<div class="beat-4__graphic">
+					<PowerTimeseries allResults={data.allResults} scrollProgress={timeseriesProgress} />
+				</div>
+			{/snippet}
+
+			<div class="narrative-steps">
+				<div class="step">
+					<h2 class="step__heading">Watch inference happen</h2>
+					<p class="step__body">
+						GPU power draw traces the shape of inference — ramp up, plateau, wind down.
+						The worst-case configuration sustains higher power throughout. Scroll to reveal both curves.
+					</p>
+				</div>
+
+				<div class="step">
+					<h2 class="step__heading">The difference is physical</h2>
+					<p class="step__body">
+						Every watt-second of difference is real energy drawn from the grid. The shaded
+						area under each curve is the total energy consumed — watch the gap open.
+					</p>
+				</div>
+
+				<div class="step step--callout">
+					<div class="depth-callout">
+						<p class="depth-callout__label">At the end of inference</p>
+						<p class="depth-callout__body">
+							The worst-case configuration has consumed {data.energyRatio}x more energy
+							for the same number of tokens. Multiply by millions of daily queries —
+							and the choice of <em>how</em> you deploy matters as much as <em>what</em> you deploy.
+						</p>
+					</div>
+				</div>
+			</div>
+		</NarrativeSection>
+	</div>
 
 	<!-- ========================================================
-	     Beat 5: Action — policy levers placeholder
+	     Beat 5: Action — three policy levers
 	     ======================================================== -->
 	<NarrativeSection id="beat-5">
-		<div class="placeholder-beat">
-			<h2 class="placeholder-beat__heading">Three levers for policy</h2>
-			<p class="placeholder-beat__body">
-				Regulation, deployment, and procurement actions that can close the 8x gap today —
-				no new technology required.
-			</p>
-			<p class="placeholder-beat__coming-soon">Phase 3 &mdash; coming soon</p>
+		<div class="beat-5">
+			<header class="beat-5__header">
+				<h2 class="beat-5__title">Three levers for policy</h2>
+				<p class="beat-5__intro">
+					The {data.energyRatio}x efficiency gap can be closed today — no new technology required.
+					Three policy levers operate at the points where decisions are actually made.
+				</p>
+			</header>
+
+			<!-- Lever 1: Regulation -->
+			<div class="lever">
+				<div class="lever__header">
+					<span class="lever__number">1</span>
+					<div>
+						<h3 class="lever__title">Regulation</h3>
+						<p class="lever__action">Mandate efficiency benchmarking in AI procurement standards</p>
+					</div>
+				</div>
+
+				<p class="lever__body">
+					Regulatory frameworks currently specify model capability thresholds but ignore
+					operational efficiency. A simple requirement to report energy per output token at
+					defined hardware configurations would make the {data.globalRatio}x variation visible
+					to procurement teams — before contracts are signed.
+				</p>
+
+				<!-- Min/max energy range indicator -->
+				<div class="range-indicator">
+					<div class="range-indicator__label">
+						Energy per token across all configurations
+					</div>
+					<div class="range-indicator__bar-row">
+						<span class="range-indicator__end range-indicator__end--efficient">
+							{(data.minEnergyGlobal * 1000).toFixed(2)} mJ
+						</span>
+						<div class="range-indicator__bar">
+							<div class="range-indicator__fill"></div>
+						</div>
+						<span class="range-indicator__end range-indicator__end--wasteful">
+							{(data.maxEnergyGlobal * 1000).toFixed(2)} mJ
+						</span>
+					</div>
+					<div class="range-indicator__sublabel">
+						{data.globalRatio}x spread — fully addressable by configuration choice
+					</div>
+				</div>
+
+				<ExpandableDetail title="Technical depth: what benchmarking requires">
+					<p class="lever-note">
+						Standardised efficiency benchmarking requires three components: a fixed hardware
+						reference (e.g., an A100 80GB), a canonical inference workload (fixed prompt
+						length, batch size, output tokens), and a reporting format compatible with
+						existing procurement documentation. The llenergymeasure schema provides a
+						machine-readable starting point.
+					</p>
+					<p class="lever-note">
+						ISO/IEC and NIST AI Risk Management frameworks already include provisions for
+						operational transparency — efficiency benchmarking can be added as a reporting
+						requirement without new legislation in most jurisdictions.
+					</p>
+				</ExpandableDetail>
+			</div>
+
+			<!-- Lever 2: Deployment -->
+			<div class="lever">
+				<div class="lever__header">
+					<span class="lever__number">2</span>
+					<div>
+						<h3 class="lever__title">Deployment</h3>
+						<p class="lever__action">Use production-optimised inference backends by default</p>
+					</div>
+				</div>
+
+				<p class="lever__body">
+					Research teams default to PyTorch for reproducibility. Production systems often
+					inherit those defaults. Switching to vLLM or TensorRT at the same precision
+					reduces energy per token materially — with no change to model weights or hardware.
+				</p>
+
+				<!-- Backend comparison bar chart -->
+				<div class="deployment-chart" aria-label="Energy per token by backend at bf16 precision">
+					<p class="deployment-chart__label">Energy per token (bf16, SDPA, best batch)</p>
+					{#each data.deploymentData as item (item.backend)}
+						<div class="bar-row">
+							<span class="bar-label">{item.label}</span>
+							<div class="bar-track">
+								<div
+									class="bar-fill"
+									class:bar-fill--worst={item.backend === 'pytorch'}
+									class:bar-fill--best={item.backend === 'tensorrt'}
+									style="width: {deploymentMax > 0 ? (item.energyPerToken / deploymentMax) * 100 : 0}%"
+								></div>
+							</div>
+							<span class="bar-value">{(item.energyPerToken * 1000).toFixed(2)} mJ</span>
+						</div>
+					{/each}
+				</div>
+
+				<ExpandableDetail title="Technical depth: backend efficiency differences">
+					<p class="lever-note">
+						vLLM and TensorRT achieve efficiency gains through continuous batching,
+						kernel fusion, and memory management optimisations absent in vanilla PyTorch.
+						These gains compound: at higher batch sizes, TensorRT's fused attention
+						kernels substantially reduce memory bandwidth pressure compared to eager
+						or SDPA attention.
+					</p>
+					<p class="lever-note">
+						Switching backends requires revalidating output quality at deployment — a one-time
+						engineering investment that pays ongoing efficiency dividends.
+					</p>
+				</ExpandableDetail>
+			</div>
+
+			<!-- Lever 3: Procurement -->
+			<div class="lever">
+				<div class="lever__header">
+					<span class="lever__number">3</span>
+					<div>
+						<h3 class="lever__title">Procurement</h3>
+						<p class="lever__action">Include efficiency configuration requirements in AI service contracts</p>
+					</div>
+				</div>
+
+				<p class="lever__body">
+					AI service contracts specify SLA uptime, latency targets, and model version — but
+					rarely operational efficiency. Adding a minimum energy-per-token threshold
+					(verified at contract renewal) shifts the burden of configuration optimisation
+					to the provider, where it belongs.
+				</p>
+
+				<!-- 8x cost framing -->
+				<div class="procurement-callout">
+					<div class="procurement-callout__ratio">
+						<span class="procurement-callout__number wasteful">{data.energyRatio}x</span>
+						<span class="procurement-callout__label">energy cost difference</span>
+					</div>
+					<p class="procurement-callout__body">
+						Between worst and best configuration for the same model, on the same hardware.
+						A contract that doesn't specify configuration effectively allows the provider
+						to deliver the {data.energyRatio}x worse outcome at the same price.
+					</p>
+				</div>
+
+				<ExpandableDetail title="Technical depth: contract specification language">
+					<p class="lever-note">
+						An efficiency clause might read: "The service shall operate at no greater than
+						[X] mJ per output token at the contracted hardware tier, measured under the
+						llenergymeasure benchmark protocol at 90th-percentile load." X can be derived
+						from the best-known configuration for the contracted model.
+					</p>
+					<p class="lever-note">
+						Measurement cost is low: llenergymeasure benchmarks run in under 30 minutes
+						on standard ML infrastructure. The measurement overhead does not justify
+						exclusion from contract terms.
+					</p>
+				</ExpandableDetail>
+			</div>
+
+			<div class="beat-5__footer">
+				<MethodologyLink />
+			</div>
 		</div>
 	</NarrativeSection>
 </ScrollNarrative>
@@ -372,7 +600,7 @@
 		align-self: flex-end;
 	}
 
-	/* Narrative text steps (Beat 2) */
+	/* Narrative text steps (Beat 2 and Beat 4) */
 	.narrative-steps {
 		display: flex;
 		flex-direction: column;
@@ -459,37 +687,340 @@
 		padding: 0 var(--space-2);
 	}
 
-	/* ── Placeholder beats (3-5) ── */
-	.placeholder-beat {
-		min-height: 60vh;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
+	/* ── Beat 3: Exploration ── */
+	.beat-3__intro {
 		padding: var(--space-12) var(--space-8);
 		max-width: var(--content-max-width);
-		margin-inline: auto;
 	}
 
-	.placeholder-beat__heading {
+	.beat-3__heading {
 		font-family: var(--font-heading);
 		font-size: var(--text-3xl);
 		font-weight: var(--weight-bold);
 		color: var(--color-text);
 		margin-bottom: var(--space-4);
+		line-height: var(--leading-tight);
 	}
 
-	.placeholder-beat__body {
+	.beat-3__body {
 		font-size: var(--text-lg);
 		line-height: var(--leading-relaxed);
 		color: var(--color-text);
-		margin-bottom: var(--space-6);
-		max-width: 38rem;
 	}
 
-	.placeholder-beat__coming-soon {
+	.beat-3-explorer {
+		width: 100%;
+		padding-block: var(--space-8);
+		border-top: 1px solid var(--color-border);
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
+	.beat-3-explorer__inner {
+		max-width: var(--content-wide-width);
+		margin-inline: auto;
+		padding-inline: var(--space-8);
+	}
+
+	/* ── Beat 4: Depth ── */
+	.beat-4__graphic {
+		width: 100%;
+		padding: var(--space-4);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.depth-callout {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-left: 4px solid var(--color-primary);
+		border-radius: var(--radius-md);
+		padding: var(--space-6);
+	}
+
+	.depth-callout__label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-bottom: var(--space-3);
+	}
+
+	.depth-callout__body {
+		font-size: var(--text-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	/* ── Beat 5: Action ── */
+	.beat-5 {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-12);
+		padding: var(--space-12) var(--space-8);
+		max-width: var(--content-wide-width);
+		margin-inline: auto;
+	}
+
+	.beat-5__header {
+		max-width: var(--content-max-width);
+	}
+
+	.beat-5__title {
+		font-family: var(--font-heading);
+		font-size: var(--text-4xl);
+		font-weight: var(--weight-bold);
+		color: var(--color-text);
+		margin-bottom: var(--space-4);
+		line-height: var(--leading-tight);
+	}
+
+	.beat-5__intro {
+		font-size: var(--text-xl);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-muted);
+		margin: 0;
+	}
+
+	/* Policy lever card */
+	.lever {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: var(--space-8);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-6);
+	}
+
+	.lever__header {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--space-4);
+	}
+
+	.lever__number {
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 50%;
+		background: var(--color-primary);
+		color: #ffffff;
+		font-family: var(--font-heading);
+		font-size: var(--text-lg);
+		font-weight: var(--weight-bold);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.lever__title {
+		font-size: var(--text-xs);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-muted);
+		margin-bottom: var(--space-1);
+		font-weight: var(--weight-medium);
+	}
+
+	.lever__action {
+		font-family: var(--font-heading);
+		font-size: var(--text-xl);
+		font-weight: var(--weight-bold);
+		color: var(--color-text);
+		margin: 0;
+		line-height: var(--leading-tight);
+	}
+
+	.lever__body {
+		font-size: var(--text-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text);
+		margin: 0;
+		max-width: 56rem;
+	}
+
+	.lever-note {
 		font-size: var(--text-sm);
 		color: var(--color-text-muted);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+	}
+
+	/* Range indicator (Lever 1) */
+	.range-indicator {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-4);
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+	}
+
+	.range-indicator__label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.range-indicator__bar-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.range-indicator__bar {
+		flex: 1;
+		height: 0.75rem;
+		background: linear-gradient(
+			to right,
+			var(--color-energy-efficient),
+			var(--color-energy-mid-cool),
+			var(--color-energy-mid-warm),
+			var(--color-energy-wasteful)
+		);
+		border-radius: 9999px;
+	}
+
+	.range-indicator__fill {
+		/* purely decorative gradient bar — the fill represents the full range */
+		width: 100%;
+		height: 100%;
+	}
+
+	.range-indicator__end {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		white-space: nowrap;
+		font-weight: var(--weight-medium);
+	}
+
+	.range-indicator__end--efficient {
+		color: var(--color-energy-efficient);
+	}
+
+	.range-indicator__end--wasteful {
+		color: var(--color-energy-wasteful);
+	}
+
+	.range-indicator__sublabel {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
 		font-style: italic;
+	}
+
+	/* Deployment bar chart (Lever 2) */
+	.deployment-chart {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+	}
+
+	.deployment-chart__label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin: 0;
+		margin-bottom: var(--space-2);
+	}
+
+	.bar-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.bar-label {
+		font-family: var(--font-mono);
+		font-size: var(--text-sm);
+		color: var(--color-text);
+		width: 5.5rem;
+		flex-shrink: 0;
+	}
+
+	.bar-track {
+		flex: 1;
+		height: 1.5rem;
+		background: var(--color-border);
+		border-radius: var(--radius-sm);
+		overflow: hidden;
+	}
+
+	.bar-fill {
+		height: 100%;
+		background: var(--color-primary-light);
+		border-radius: var(--radius-sm);
+		transition: width 0.4s ease;
+	}
+
+	.bar-fill--worst {
+		background: var(--color-energy-wasteful);
+	}
+
+	.bar-fill--best {
+		background: var(--color-energy-efficient);
+	}
+
+	.bar-value {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		width: 5rem;
+		text-align: right;
+		flex-shrink: 0;
+	}
+
+	/* Procurement callout (Lever 3) */
+	.procurement-callout {
+		display: flex;
+		gap: var(--space-6);
+		align-items: flex-start;
+		padding: var(--space-6);
+		background: var(--color-bg);
+		border-radius: var(--radius-md);
+	}
+
+	.procurement-callout__ratio {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.procurement-callout__number {
+		font-family: var(--font-heading);
+		font-size: var(--text-4xl);
+		font-weight: var(--weight-bold);
+		line-height: 1;
+	}
+
+	.procurement-callout__number.wasteful {
+		color: var(--color-energy-wasteful);
+	}
+
+	.procurement-callout__label {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		text-align: center;
+		max-width: 5rem;
+	}
+
+	.procurement-callout__body {
+		font-size: var(--text-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.beat-5__footer {
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--color-border);
 	}
 
 	/* ── Responsive ── */
@@ -509,8 +1040,54 @@
 			transform: rotate(90deg);
 		}
 
-		.placeholder-beat {
+		.beat-3__intro {
 			padding: var(--space-8) var(--space-4);
+		}
+
+		.beat-3-explorer__inner {
+			padding-inline: var(--space-4);
+		}
+
+		.beat-5 {
+			padding: var(--space-8) var(--space-4);
+		}
+
+		.lever {
+			padding: var(--space-6) var(--space-4);
+		}
+
+		.procurement-callout {
+			flex-direction: column;
+			gap: var(--space-4);
+		}
+
+		.bar-row {
+			flex-wrap: wrap;
+		}
+
+		.bar-label {
+			width: 100%;
+		}
+
+		.bar-value {
+			width: auto;
+		}
+	}
+
+	/* ── Reduced motion ── */
+	@media (prefers-reduced-motion: reduce) {
+		.beat-1__counter,
+		.beat-1__secondary,
+		.beat-1__tertiary,
+		.beat-1__equivalence,
+		.beat-1__skip {
+			transition: none;
+			opacity: 1;
+			transform: none;
+		}
+
+		.bar-fill {
+			transition: none;
 		}
 	}
 </style>
