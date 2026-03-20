@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { browser } from '$app/environment';
 	import TimeseriesControls from './TimeseriesControls.svelte';
 	import MethodologyLink from './MethodologyLink.svelte';
@@ -15,7 +16,7 @@
 
 	// ── Config list from unique experiment configs ──────────────────────────
 	const configs = $derived.by(() => {
-		const seen = new Set<string>();
+		const seen = new SvelteSet<string>();
 		const list: { label: string; id: string; result: ExperimentResult }[] = [];
 
 		for (const r of allResults) {
@@ -63,7 +64,6 @@
 	let svgWidth = $state(300);
 
 	let leftPanel: HTMLDivElement;
-	let rightPanel: HTMLDivElement;
 
 	$effect(() => {
 		if (!browser || !leftPanel) return;
@@ -275,40 +275,44 @@
 				<!-- Axes -->
 				<g transform="translate({MARGIN.left},{MARGIN.top})">
 					<!-- Y-axis gridlines and labels -->
-					{#each yTicks as tick}
-						<line
-							x1="0"
-							y1={tick.y}
-							x2={innerWidth}
-							y2={tick.y}
-							stroke="var(--color-border)"
-							stroke-dasharray="3,3"
-						/>
-						<text
-							x="-8"
-							y={tick.y + 4}
-							text-anchor="end"
-							font-size="11"
-							fill="var(--color-text-muted)"
-						>{tick.w}</text>
+					{#each yTicks as tick (tick.w)}
+						<g>
+							<line
+								x1="0"
+								y1={tick.y}
+								x2={innerWidth}
+								y2={tick.y}
+								stroke="var(--color-border)"
+								stroke-dasharray="3,3"
+							/>
+							<text
+								x="-8"
+								y={tick.y + 4}
+								text-anchor="end"
+								font-size="11"
+								fill="var(--color-text-muted)"
+							>{tick.w}</text>
+						</g>
 					{/each}
 
 					<!-- X-axis ticks -->
-					{#each xTicks as tick}
-						<line
-							x1={tick.x}
-							y1={innerHeight}
-							x2={tick.x}
-							y2={innerHeight + 5}
-							stroke="var(--color-border)"
-						/>
-						<text
-							x={tick.x}
-							y={innerHeight + 18}
-							text-anchor="middle"
-							font-size="11"
-							fill="var(--color-text-muted)"
-						>{tick.t}s</text>
+					{#each xTicks as tick (tick.t)}
+						<g>
+							<line
+								x1={tick.x}
+								y1={innerHeight}
+								x2={tick.x}
+								y2={innerHeight + 5}
+								stroke="var(--color-border)"
+							/>
+							<text
+								x={tick.x}
+								y={innerHeight + 18}
+								text-anchor="middle"
+								font-size="11"
+								fill="var(--color-text-muted)"
+							>{tick.t}s</text>
+						</g>
 					{/each}
 
 					<!-- Y-axis label -->
@@ -377,40 +381,44 @@
 				<!-- Axes -->
 				<g transform="translate({MARGIN.left},{MARGIN.top})">
 					<!-- Y-axis gridlines and labels -->
-					{#each yTicks as tick}
-						<line
-							x1="0"
-							y1={tick.y}
-							x2={innerWidth}
-							y2={tick.y}
-							stroke="var(--color-border)"
-							stroke-dasharray="3,3"
-						/>
-						<text
-							x="-8"
-							y={tick.y + 4}
-							text-anchor="end"
-							font-size="11"
-							fill="var(--color-text-muted)"
-						>{tick.w}</text>
+					{#each yTicks as tick (tick.w)}
+						<g>
+							<line
+								x1="0"
+								y1={tick.y}
+								x2={innerWidth}
+								y2={tick.y}
+								stroke="var(--color-border)"
+								stroke-dasharray="3,3"
+							/>
+							<text
+								x="-8"
+								y={tick.y + 4}
+								text-anchor="end"
+								font-size="11"
+								fill="var(--color-text-muted)"
+							>{tick.w}</text>
+						</g>
 					{/each}
 
 					<!-- X-axis ticks -->
-					{#each xTicks as tick}
-						<line
-							x1={tick.x}
-							y1={innerHeight}
-							x2={tick.x}
-							y2={innerHeight + 5}
-							stroke="var(--color-border)"
-						/>
-						<text
-							x={tick.x}
-							y={innerHeight + 18}
-							text-anchor="middle"
-							font-size="11"
-							fill="var(--color-text-muted)"
-						>{tick.t}s</text>
+					{#each xTicks as tick (tick.t)}
+						<g>
+							<line
+								x1={tick.x}
+								y1={innerHeight}
+								x2={tick.x}
+								y2={innerHeight + 5}
+								stroke="var(--color-border)"
+							/>
+							<text
+								x={tick.x}
+								y={innerHeight + 18}
+								text-anchor="middle"
+								font-size="11"
+								fill="var(--color-text-muted)"
+							>{tick.t}s</text>
+						</g>
 					{/each}
 
 					<!-- Y-axis label -->

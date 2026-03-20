@@ -65,7 +65,7 @@ see the core claim made visually, and arrive at actionable policy conclusions - 
      fp16), and the user can play, pause, and scrub the animation.
   5. Every chart has a visible "How was this measured?" link pointing to the methodology
      page, and the narrative works end-to-end on a mobile touch device.
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md -- Test infrastructure + TypeScript types + data transform layer (TDD)
@@ -116,6 +116,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-03-20 |
-| 2. Scroll Narrative | 3/5 | In Progress|  |
+| 2. Scroll Narrative | 4/5 | In Progress|  |
 | 3. Explorer + Advanced Visualisations | 0/TBD | Not started | - |
 | 4. Distribution + Polish | 0/TBD | Not started | - |

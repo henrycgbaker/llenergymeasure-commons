@@ -13,9 +13,9 @@
 		rightConfigId: string;
 		onPlay: () => void;
 		onPause: () => void;
-		onSeek: (progress: number) => void;
-		onLeftChange: (id: string) => void;
-		onRightChange: (id: string) => void;
+		onSeek: (_progress: number) => void;
+		onLeftChange: (_id: string) => void;
+		onRightChange: (_id: string) => void;
 	}
 
 	const {

@@ -3,9 +3,9 @@
 		selectedBackend: string;
 		selectedAttn: string;
 		selectedMetric: string;
-		onBackendChange: (value: string) => void;
-		onAttnChange: (value: string) => void;
-		onMetricChange: (value: string) => void;
+		onBackendChange: (_v: string) => void;
+		onAttnChange: (_v: string) => void;
+		onMetricChange: (_v: string) => void;
 	}
 
 	const {

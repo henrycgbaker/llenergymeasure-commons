@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-scroll-narrative/02-03-PLAN.md
-last_updated: "2026-03-20T20:05:31.804Z"
+stopped_at: Completed 02-scroll-narrative/02-04-PLAN.md
+last_updated: "2026-03-20T20:15:21.544Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 20
 ---
 
@@ -54,6 +54,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 02-scroll-narrative P01 | 3 | 2 tasks | 9 files |
 | Phase 02-scroll-narrative P02 | 9 | 2 tasks | 9 files |
 | Phase 02-scroll-narrative P03 | 7min | 2 tasks | 6 files |
+| Phase 02-scroll-narrative P04 | 7 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,10 @@ Recent decisions affecting current work:
 - [Phase 02-scroll-narrative]: d3.zoom applied to SVG element in $effect; inner <g> receives transform so axes remain stable during pan/zoom
 - [Phase 02-scroll-narrative]: Filter/metric changes use zoomResetTrigger counter to signal ConfigHeatmap to reset zoom identity
 - [Phase 02-scroll-narrative]: ESLint varsIgnorePattern added to Svelte rule block to handle TypeScript interface callback parameter name false positives
+- [Phase 02-scroll-narrative]: PowerTimeseries uses native scroll getBoundingClientRect tracking (not GSAP) matching Beat 2 pattern
+- [Phase 02-scroll-narrative]: Both power curves normalised to 60 s time axis for fair visual comparison regardless of real inference duration
+- [Phase 02-scroll-narrative]: Beat 3 two-section approach: short NarrativeSection intro + separate unpinned section avoids sticky toggle jitter
+- [Phase 02-scroll-narrative]: SvelteSet imported from svelte/reactivity (not svelte) for reactive deduplication
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T20:05:31.800Z
-Stopped at: Completed 02-scroll-narrative/02-03-PLAN.md
+Last session: 2026-03-20T20:15:21.540Z
+Stopped at: Completed 02-scroll-narrative/02-04-PLAN.md
 Resume file: None
