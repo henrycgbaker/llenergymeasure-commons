@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import DataBanner from '$lib/components/DataBanner.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -12,6 +11,4 @@
 </script>
 
 <DataBanner />
-<PageLayout>
-	{@render children()}
-</PageLayout>
+{@render children()}

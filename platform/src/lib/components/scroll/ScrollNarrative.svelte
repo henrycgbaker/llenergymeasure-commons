@@ -5,12 +5,11 @@
 
 	interface Props {
 		children: Snippet;
-		onBeatProgress?: (beatId: string, progress: number) => void;
 	}
 
-	const { children, onBeatProgress }: Props = $props();
+	const { children }: Props = $props();
 
-	// Scroll progress per beat, keyed by section id
+	// Scroll progress per beat, keyed by section id (for future use by child components)
 	let beatProgress: Record<string, number> = $state({});
 
 	let containerEl: HTMLElement;
@@ -28,15 +27,15 @@
 
 			// Create a GSAP context scoped to the container element
 			const ctx = gsap.context(() => {
-				// Only apply GSAP pinning on pointer (non-touch) devices
-				// Touch devices rely on CSS position: sticky alone (avoids iOS pin jitter)
+				// Only apply GSAP pinning on pointer (non-touch) devices.
+				// Touch devices rely on CSS position: sticky alone (avoids iOS pin jitter).
 				ScrollTrigger.matchMedia({
 					'(hover: hover)': function () {
 						// Desktop: use GSAP ScrollTrigger for precise scroll progress tracking
 						const sections = containerEl.querySelectorAll('[id^="beat-"]');
 
 						sections.forEach((section) => {
-							const id = section.id;
+							const sectionId = section.id;
 							const graphicEl = section.querySelector('.scrolly__graphic');
 
 							// Track scroll progress for each beat
@@ -46,8 +45,7 @@
 								end: 'bottom bottom',
 								scrub: true,
 								onUpdate: (self) => {
-									beatProgress = { ...beatProgress, [id]: self.progress };
-									onBeatProgress?.(id, self.progress);
+									beatProgress = { ...beatProgress, [sectionId]: self.progress };
 								}
 							});
 
@@ -68,17 +66,15 @@
 						const sections = containerEl.querySelectorAll('[id^="beat-"]');
 
 						sections.forEach((section) => {
-							const id = section.id;
+							const sectionId = section.id;
 
-							// Still track progress using IntersectionObserver approach
 							ScrollTrigger.create({
 								trigger: section,
 								start: 'top center',
 								end: 'bottom center',
 								scrub: true,
 								onUpdate: (self) => {
-									beatProgress = { ...beatProgress, [id]: self.progress };
-									onBeatProgress?.(id, self.progress);
+									beatProgress = { ...beatProgress, [sectionId]: self.progress };
 								}
 							});
 						});
@@ -95,7 +91,7 @@
 	});
 </script>
 
-<div class="scroll-narrative" bind:this={containerEl}>
+<div class="scroll-narrative" bind:this={containerEl} data-beat-count={Object.keys(beatProgress).length}>
 	{@render children()}
 </div>
 

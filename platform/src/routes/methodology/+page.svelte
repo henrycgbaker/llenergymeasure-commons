@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/components/Section.svelte';
 	import ExpandableDetail from '$lib/components/ExpandableDetail.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 </script>
 
 <svelte:head>
@@ -11,6 +12,7 @@
 	/>
 </svelte:head>
 
+<PageLayout>
 <main>
 	<header class="page-header">
 		<h1>Methodology</h1>
@@ -257,6 +259,7 @@
 		</ExpandableDetail>
 	</Section>
 </main>
+</PageLayout>
 
 <style>
 	main {
