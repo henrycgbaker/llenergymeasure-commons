@@ -3,9 +3,13 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 dist/
-build/
 .eggs/
 *.egg
+
+# SvelteKit
+platform/.svelte-kit/
+platform/build/
+platform/node_modules/
 
 # Virtual environments
 .venv/
@@ -29,3 +33,4 @@ Thumbs.db
 # Database
 *.db
 *.sqlite3
+.planning/
