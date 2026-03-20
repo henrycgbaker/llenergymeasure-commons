@@ -11,7 +11,7 @@
 The site tells a single story in five beats. Each beat builds on the previous, moving the reader
 from surprise (the headline number) through understanding (what drives it) to exploration (the
 full dataset) to depth (the temporal dimension) to action (what to do about it). The emotional
-arc is: *disbelief → curiosity → comprehension → urgency → agency*.
+arc is: _disbelief → curiosity → comprehension → urgency → agency_.
 
 The story has one core claim: **same model, same GPU, 8x energy difference from configuration
 alone**. Every beat serves this claim.
@@ -30,11 +30,13 @@ credibility.
 creates the pull to read further.
 
 **What the reader understands after this beat:**
+
 - The magnitude of the efficiency gap (8x)
 - This is about the same model on the same hardware - not about model choice
 - The story is about configuration, not capability
 
 **Component slot:** Large animated number reveal
+
 - Full-viewport section with the number "8x" as the centrepiece
 - Secondary line: "Same model. Same GPU." (appears after a short delay)
 - Tertiary line: "Different configuration." (appears last)
@@ -43,6 +45,7 @@ creates the pull to read further.
 - No charts, no controls - just the number
 
 **Data requirements from fixture-results.json:**
+
 - The `avg_energy_per_token_j` of the worst configuration (fp32, batch=1, PyTorch, eager)
 - The `avg_energy_per_token_j` of the best configuration (bf16 or int8, batch=128, TensorRT, flash_v2)
 - The ratio between them (should be ~8x by fixture design)
@@ -63,12 +66,14 @@ abstract in the familiar.
 problem - some regions of the configuration landscape are expensive, others are cheap.
 
 **What the reader understands after this beat:**
+
 - Which configuration dimensions matter most (precision and batch size dominate)
 - The shape of the efficiency landscape - it is not random, it has structure
 - A concrete sense of the absolute energy scale (via equivalence)
 - That this has real operational implications
 
 **Component slot:** 2D heatmap + equivalence callout
+
 - 2D topographic/heatmap: one axis = precision (fp32, fp16, bf16, int8), other axis = batch size
   (1, 8, 32, 64, 128); colour = avg_energy_per_token_j; the diverging energy palette
   (--color-energy-wasteful to --color-energy-efficient)
@@ -79,6 +84,7 @@ problem - some regions of the configuration landscape are expensive, others are 
   as charging [N] smartphones" - where N is derived from the worst-case total_energy_j figure
 
 **Data requirements from fixture-results.json:**
+
 - `avg_energy_per_token_j` for all (precision × batch_size) combinations at a fixed backend + attention
 - The worst-case total energy for a representative 1,000-query batch (to compute the equivalence)
 - The best-case for comparison (to set the colour scale anchor)
@@ -98,12 +104,14 @@ to their questions. This beat is the site's primary research value.
 have explored the configuration relevant to their context.
 
 **What the reader understands after this beat:**
+
 - The full dimensionality of the configuration landscape (all 4 dimensions, all ~180 configurations)
 - The relative contribution of each configuration dimension
 - Where their specific use-case sits in the landscape (if they explore)
 - That the 8x headline is real - they have seen it in the data themselves
 
 **Component slot:** Interactive heatmap with filters
+
 - Same 2D heatmap as Beat 2, but now with filter controls:
   - Backend selector (PyTorch / vLLM / TensorRT-LLM)
   - Attention selector (eager / SDPA / Flash Attention v2)
@@ -114,6 +122,7 @@ have explored the configuration relevant to their context.
 - Zoom: ability to zoom into a region of the heatmap for dense configurations
 
 **Data requirements from fixture-results.json:**
+
 - Full dataset: all records with `avg_energy_per_token_j`, `avg_tokens_per_second`,
   `effective_config.precision`, `effective_config.batch_size`, `effective_config.backend`,
   `effective_config.attn_implementation`
@@ -136,11 +145,13 @@ physical sense of waste - the fp32 curve is a jagged plateau where the fp16 curv
 smoother trace. The difference is not abstract.
 
 **What the reader understands after this beat:**
+
 - That the efficiency difference is physical - you can see it in the power draw over time
 - That high-precision models draw more power throughout the entire inference, not just at peaks
 - That this is not a marginal difference - the gap is large enough to see clearly in the chart
 
 **Component slot:** Animated side-by-side power timeseries
+
 - Two panels, side by side: "Worst case" (fp32, batch=1, PyTorch, eager) vs "Best case"
   (bf16, batch=128, TensorRT, Flash Attention v2)
 - X-axis: time (seconds); Y-axis: GPU power draw (watts)
@@ -152,6 +163,7 @@ smoother trace. The difference is not abstract.
 - At animation end: a callout shows the total energy ratio
 
 **Data requirements from fixture-results.json (or Parquet sidecar):**
+
 - Power timeseries (watts, timestamped) for the worst-case and best-case configurations
   - Note: if llenergymeasure produces Parquet sidecar files, use those; if not, the timeseries
     can be synthesised from the `total_energy_j` and `total_inference_time_sec` fields using
@@ -176,6 +188,7 @@ reader roles - a regulator, an IT director, a procurement officer each find thei
 action.
 
 **What the reader understands after this beat:**
+
 - Three concrete levers they can pull to improve AI energy efficiency
 - That these levers are available now - no new technology is required
 - That the 8x gap is not inevitable - it is a consequence of default choices that can be changed
@@ -183,6 +196,7 @@ action.
 **Component slot:** Three policy lever sections
 
 ### Lever 1: Regulation
+
 - **Heading:** "Mandate efficiency benchmarking in AI procurement standards"
 - **Core claim:** Current AI energy reporting focuses on model capability, not deployment
   efficiency. The same model can have an 8x energy cost difference based on configuration
@@ -195,6 +209,7 @@ action.
 - **Data requirement:** min/max `avg_energy_per_token_j` across all configurations
 
 ### Lever 2: Deployment
+
 - **Heading:** "Use production-optimised inference backends by default"
 - **Core claim:** Many organisations deploy LLMs using research-grade software (PyTorch defaults)
   intended for model development, not production serving. Switching to a production-optimised
@@ -207,6 +222,7 @@ action.
 - **Data requirement:** `avg_energy_per_token_j` grouped by `backend` at fixed precision + attention
 
 ### Lever 3: Procurement
+
 - **Heading:** "Include efficiency configuration requirements in AI service contracts"
 - **Core claim:** When procuring AI services, organisations have no visibility into the energy
   cost of their usage. A service operating at fp32 precision with batch=1 serving costs 8x more
@@ -224,17 +240,17 @@ action.
 
 The following fields from `fixture-results.json` are required for all five beats:
 
-| Field | Beats | Notes |
-|-------|-------|-------|
-| `avg_energy_per_token_j` | 1, 2, 3, 4, 5 | Primary metric; must be present for all records |
-| `avg_tokens_per_second` | 3 | Secondary metric for exploration toggle |
-| `total_energy_j` | 2, 4 | For equivalence callout and running counter |
-| `total_inference_time_sec` | 4 | For animation timescale |
-| `effective_config.precision` | 1, 2, 3, 5 | Configuration dimension |
-| `effective_config.batch_size` | 2, 3, 5 | Configuration dimension |
-| `effective_config.backend` | 3, 5 | Configuration dimension |
-| `effective_config.attn_implementation` | 3 | Configuration dimension |
-| Power timeseries (Parquet sidecar or synthetic) | 4 | If unavailable, synthesise from summary fields |
+| Field                                           | Beats         | Notes                                           |
+| ----------------------------------------------- | ------------- | ----------------------------------------------- |
+| `avg_energy_per_token_j`                        | 1, 2, 3, 4, 5 | Primary metric; must be present for all records |
+| `avg_tokens_per_second`                         | 3             | Secondary metric for exploration toggle         |
+| `total_energy_j`                                | 2, 4          | For equivalence callout and running counter     |
+| `total_inference_time_sec`                      | 4             | For animation timescale                         |
+| `effective_config.precision`                    | 1, 2, 3, 5    | Configuration dimension                         |
+| `effective_config.batch_size`                   | 2, 3, 5       | Configuration dimension                         |
+| `effective_config.backend`                      | 3, 5          | Configuration dimension                         |
+| `effective_config.attn_implementation`          | 3             | Configuration dimension                         |
+| Power timeseries (Parquet sidecar or synthetic) | 4             | If unavailable, synthesise from summary fields  |
 
 ---
 
@@ -250,6 +266,6 @@ The following fields from `fixture-results.json` are required for all five beats
 
 ---
 
-*Document status: Structural specification for Phase 2 planning*
-*Created: 2026-03-20*
-*Phase: 01-foundation*
+_Document status: Structural specification for Phase 2 planning_
+_Created: 2026-03-20_
+_Phase: 01-foundation_

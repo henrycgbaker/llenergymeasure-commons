@@ -4,77 +4,77 @@
    ============================================================ */
 
 :root {
-  /* ── Colours ── */
+	/* ── Colours ── */
 
-  /* Brand */
-  --color-primary: #1a3a5c;       /* Deep blue — headings, links, accents */
-  --color-primary-light: #2a5a8c; /* Lighter blue for hover states */
-  --color-bg: #f8f6f2;            /* Off-white warm grey — page background */
-  --color-surface: #ffffff;       /* Card / section backgrounds */
-  --color-text: #1a1a1a;          /* Near-black body text */
-  --color-text-muted: #5a5a5a;    /* Secondary text, captions */
-  --color-border: #d8d4cc;        /* Subtle borders */
+	/* Brand */
+	--color-primary: #1a3a5c; /* Deep blue — headings, links, accents */
+	--color-primary-light: #2a5a8c; /* Lighter blue for hover states */
+	--color-bg: #f8f6f2; /* Off-white warm grey — page background */
+	--color-surface: #ffffff; /* Card / section backgrounds */
+	--color-text: #1a1a1a; /* Near-black body text */
+	--color-text-muted: #5a5a5a; /* Secondary text, captions */
+	--color-border: #d8d4cc; /* Subtle borders */
 
-  /* Energy spectrum — ColorBrewer RdBu diverging (colourblind-safe) */
-  --color-energy-efficient: #2166ac;  /* Cool blue — low energy */
-  --color-energy-mid-cool: #74add1;   /* Mid-blue */
-  --color-energy-mid: #f7f7f7;        /* Neutral midpoint */
-  --color-energy-mid-warm: #f4a582;   /* Mid-amber */
-  --color-energy-wasteful: #d6604d;   /* Warm red-orange — high energy */
+	/* Energy spectrum — ColorBrewer RdBu diverging (colourblind-safe) */
+	--color-energy-efficient: #2166ac; /* Cool blue — low energy */
+	--color-energy-mid-cool: #74add1; /* Mid-blue */
+	--color-energy-mid: #f7f7f7; /* Neutral midpoint */
+	--color-energy-mid-warm: #f4a582; /* Mid-amber */
+	--color-energy-wasteful: #d6604d; /* Warm red-orange — high energy */
 
-  /* Banner */
-  --color-banner-bg: #fff8e1;
-  --color-banner-border: #f9a825;
-  --color-banner-text: #5d4037;
+	/* Banner */
+	--color-banner-bg: #fff8e1;
+	--color-banner-border: #f9a825;
+	--color-banner-text: #5d4037;
 
-  /* ── Spacing scale ── (0.25rem base, doubling) */
-  --space-1: 0.25rem;   /*  4px */
-  --space-2: 0.5rem;    /*  8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-24: 6rem;     /* 96px */
+	/* ── Spacing scale ── (0.25rem base, doubling) */
+	--space-1: 0.25rem; /*  4px */
+	--space-2: 0.5rem; /*  8px */
+	--space-3: 0.75rem; /* 12px */
+	--space-4: 1rem; /* 16px */
+	--space-6: 1.5rem; /* 24px */
+	--space-8: 2rem; /* 32px */
+	--space-12: 3rem; /* 48px */
+	--space-16: 4rem; /* 64px */
+	--space-24: 6rem; /* 96px */
 
-  /* ── Typography ── */
+	/* ── Typography ── */
 
-  /* Font families */
-  --font-heading: Georgia, 'Times New Roman', serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Courier New', Courier, monospace;
+	/* Font families */
+	--font-heading: Georgia, 'Times New Roman', serif;
+	--font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-mono: 'Courier New', Courier, monospace;
 
-  /* Font sizes — modular scale (1.25 ratio) */
-  --text-xs:   0.75rem;   /* 12px */
-  --text-sm:   0.875rem;  /* 14px */
-  --text-base: 1rem;      /* 16px */
-  --text-lg:   1.125rem;  /* 18px */
-  --text-xl:   1.25rem;   /* 20px */
-  --text-2xl:  1.5rem;    /* 24px */
-  --text-3xl:  1.875rem;  /* 30px */
-  --text-4xl:  2.25rem;   /* 36px */
+	/* Font sizes — modular scale (1.25 ratio) */
+	--text-xs: 0.75rem; /* 12px */
+	--text-sm: 0.875rem; /* 14px */
+	--text-base: 1rem; /* 16px */
+	--text-lg: 1.125rem; /* 18px */
+	--text-xl: 1.25rem; /* 20px */
+	--text-2xl: 1.5rem; /* 24px */
+	--text-3xl: 1.875rem; /* 30px */
+	--text-4xl: 2.25rem; /* 36px */
 
-  /* Line heights */
-  --leading-tight: 1.25;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.75;
+	/* Line heights */
+	--leading-tight: 1.25;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.75;
 
-  /* Font weights */
-  --weight-normal: 400;
-  --weight-medium: 500;
-  --weight-bold: 700;
+	/* Font weights */
+	--weight-normal: 400;
+	--weight-medium: 500;
+	--weight-bold: 700;
 
-  /* ── Layout ── */
-  --content-max-width: 48rem;    /* 768px — comfortable reading width */
-  --content-wide-width: 72rem;   /* 1152px — wide content (charts etc.) */
+	/* ── Layout ── */
+	--content-max-width: 48rem; /* 768px — comfortable reading width */
+	--content-wide-width: 72rem; /* 1152px — wide content (charts etc.) */
 
-  /* ── Borders ── */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+	/* ── Borders ── */
+	--radius-sm: 0.25rem;
+	--radius-md: 0.5rem;
+	--radius-lg: 0.75rem;
 
-  /* ── Transitions ── */
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
+	/* ── Transitions ── */
+	--transition-fast: 150ms ease;
+	--transition-normal: 250ms ease;
 }
