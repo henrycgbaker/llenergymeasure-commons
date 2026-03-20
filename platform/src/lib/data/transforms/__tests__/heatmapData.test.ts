@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { toHeatmapData } from '../heatmapData.js';
-import type { ExperimentResult } from '../../types.js';
+import type { ExperimentResult, HeatmapCell } from '../../types.js';
 import fixtureData from '../../../../../static/data/fixture-results.json';
 
 const fixtures = fixtureData as ExperimentResult[];
@@ -50,7 +50,7 @@ describe('toHeatmapData', () => {
 		const backends = [...new Set(fixtures.map((r) => r.backend))];
 		const attns = [...new Set(fixtures.map((r) => r.effective_config.attn_implementation))];
 
-		let allCells = [];
+		let allCells: HeatmapCell[] = [];
 		for (const backend of backends) {
 			for (const attn of attns) {
 				const cells = toHeatmapData(fixtures, backend, attn);
