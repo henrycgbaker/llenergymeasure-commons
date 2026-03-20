@@ -41,7 +41,11 @@ export default [
 			}
 		},
 		rules: {
-			'svelte/no-navigation-without-resolve': 'off'
+			'svelte/no-navigation-without-resolve': 'off',
+			// TypeScript interface callback parameter names are incorrectly flagged as unused
+			// variables by the base no-unused-vars rule when parsed inside Svelte script blocks.
+			// Using varsIgnorePattern to suppress false positives on _-prefixed type parameter names.
+			'no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }]
 		}
 	},
 	{
