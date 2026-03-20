@@ -91,7 +91,11 @@
 	});
 </script>
 
-<div class="scroll-narrative" bind:this={containerEl} data-beat-count={Object.keys(beatProgress).length}>
+<div
+	class="scroll-narrative"
+	bind:this={containerEl}
+	data-beat-count={Object.keys(beatProgress).length}
+>
 	{@render children()}
 </div>
 

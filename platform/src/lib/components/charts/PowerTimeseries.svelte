@@ -5,6 +5,7 @@
 	import TimeseriesControls from './TimeseriesControls.svelte';
 	import MethodologyLink from './MethodologyLink.svelte';
 	import { synthesisePowerCurve } from '$lib/data/transforms/timeseriesData.js';
+	import { smartphoneCharges } from '$lib/data/transforms/equivalences.js';
 	import type { ExperimentResult, PowerPoint } from '$lib/data/types.js';
 
 	interface Props {
@@ -167,6 +168,14 @@
 	const leftEnergy = $derived(computeRevealedEnergy(leftCurve, effectiveProgress));
 	const rightEnergy = $derived(computeRevealedEnergy(rightCurve, effectiveProgress));
 
+	// Smartphone equivalence at deployment scale (static per config, not scroll-driven)
+	const leftCharges = $derived(
+		leftResult ? smartphoneCharges(leftResult.avg_energy_per_token_j).toLocaleString() : '—'
+	);
+	const rightCharges = $derived(
+		rightResult ? smartphoneCharges(rightResult.avg_energy_per_token_j).toLocaleString() : '—'
+	);
+
 	function formatEnergy(j: number): string {
 		if (j >= 1000) return `${(j / 1000).toFixed(2)} kJ`;
 		return `${j.toFixed(0)} J`;
@@ -290,8 +299,8 @@
 								y={tick.y + 4}
 								text-anchor="end"
 								font-size="11"
-								fill="var(--color-text-muted)"
-							>{tick.w}</text>
+								fill="var(--color-text-muted)">{tick.w}</text
+							>
 						</g>
 					{/each}
 
@@ -310,8 +319,8 @@
 								y={innerHeight + 18}
 								text-anchor="middle"
 								font-size="11"
-								fill="var(--color-text-muted)"
-							>{tick.t}s</text>
+								fill="var(--color-text-muted)">{tick.t}s</text
+							>
 						</g>
 					{/each}
 
@@ -322,8 +331,8 @@
 						y="-38"
 						text-anchor="middle"
 						font-size="11"
-						fill="var(--color-text-muted)"
-					>GPU power (W)</text>
+						fill="var(--color-text-muted)">GPU power (W)</text
+					>
 
 					<!-- X-axis label -->
 					<text
@@ -331,8 +340,8 @@
 						y={innerHeight + 36}
 						text-anchor="middle"
 						font-size="11"
-						fill="var(--color-text-muted)"
-					>Normalised inference time</text>
+						fill="var(--color-text-muted)">Normalised inference time</text
+					>
 
 					<!-- Area (clipped) -->
 					<path
@@ -357,6 +366,9 @@
 			<div class="energy-counter energy-counter--wasteful">
 				<span class="energy-label">Energy drawn so far</span>
 				<span class="energy-value">{formatEnergy(leftEnergy)}</span>
+				<span class="energy-equivalence"
+					>= {leftCharges} smartphone charges / 10M queries per month</span
+				>
 			</div>
 		</div>
 
@@ -396,8 +408,8 @@
 								y={tick.y + 4}
 								text-anchor="end"
 								font-size="11"
-								fill="var(--color-text-muted)"
-							>{tick.w}</text>
+								fill="var(--color-text-muted)">{tick.w}</text
+							>
 						</g>
 					{/each}
 
@@ -416,8 +428,8 @@
 								y={innerHeight + 18}
 								text-anchor="middle"
 								font-size="11"
-								fill="var(--color-text-muted)"
-							>{tick.t}s</text>
+								fill="var(--color-text-muted)">{tick.t}s</text
+							>
 						</g>
 					{/each}
 
@@ -428,8 +440,8 @@
 						y="-38"
 						text-anchor="middle"
 						font-size="11"
-						fill="var(--color-text-muted)"
-					>GPU power (W)</text>
+						fill="var(--color-text-muted)">GPU power (W)</text
+					>
 
 					<!-- X-axis label -->
 					<text
@@ -437,8 +449,8 @@
 						y={innerHeight + 36}
 						text-anchor="middle"
 						font-size="11"
-						fill="var(--color-text-muted)"
-					>Normalised inference time</text>
+						fill="var(--color-text-muted)">Normalised inference time</text
+					>
 
 					<!-- Area (clipped) -->
 					<path
@@ -463,14 +475,17 @@
 			<div class="energy-counter energy-counter--efficient">
 				<span class="energy-label">Energy drawn so far</span>
 				<span class="energy-value">{formatEnergy(rightEnergy)}</span>
+				<span class="energy-equivalence"
+					>= {rightCharges} smartphone charges / 10M queries per month</span
+				>
 			</div>
 		</div>
 	</div>
 
 	<!-- Normalised time note -->
 	<p class="time-note">
-		Both curves normalised to 60 s. Real inference durations vary by configuration —
-		see methodology for details.
+		Both curves normalised to 60 s. Real inference durations vary by configuration — see methodology
+		for details.
 	</p>
 
 	<!-- Replay controls (appear after scroll-driven animation completes) -->
@@ -484,8 +499,12 @@
 		onPlay={doPlay}
 		onPause={doPause}
 		onSeek={doSeek}
-		onLeftChange={(id) => { leftConfigId = id; }}
-		onRightChange={(id) => { rightConfigId = id; }}
+		onLeftChange={(id) => {
+			leftConfigId = id;
+		}}
+		onRightChange={(id) => {
+			rightConfigId = id;
+		}}
 	/>
 
 	<MethodologyLink />
@@ -573,6 +592,13 @@
 
 	.energy-counter--efficient .energy-value {
 		color: var(--color-energy-efficient);
+	}
+
+	.energy-equivalence {
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+		line-height: var(--leading-relaxed);
+		margin-top: var(--space-1);
 	}
 
 	.time-note {

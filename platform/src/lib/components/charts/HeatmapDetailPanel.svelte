@@ -12,11 +12,7 @@
 	const equivalence = $derived(cell ? formatEquivalence(smartphoneCharges(cell.energy)) : '');
 	const ratioBarWidth = $derived(cell ? Math.min(100, (cell.ratioVsBest / 10) * 100) : 0);
 	const ratioLabel = $derived(
-		cell
-			? cell.ratioVsBest <= 1.05
-				? 'Optimal'
-				: `${cell.ratioVsBest.toFixed(1)}x vs best`
-			: ''
+		cell ? (cell.ratioVsBest <= 1.05 ? 'Optimal' : `${cell.ratioVsBest.toFixed(1)}x vs best`) : ''
 	);
 </script>
 
@@ -43,7 +39,8 @@
 					</tr>
 					<tr>
 						<td class="detail-table__key">Attention</td>
-						<td class="detail-table__value detail-table__value--mono">{cell.attn_implementation}</td>
+						<td class="detail-table__value detail-table__value--mono">{cell.attn_implementation}</td
+						>
 					</tr>
 				</tbody>
 			</table>
@@ -81,10 +78,16 @@
 				<span
 					class="ratio-section__value"
 					class:ratio-section__value--optimal={cell.ratioVsBest <= 1.05}
-					class:ratio-section__value--bad={cell.ratioVsBest > 4}
-				>{ratioLabel}</span>
+					class:ratio-section__value--bad={cell.ratioVsBest > 4}>{ratioLabel}</span
+				>
 			</div>
-			<div class="ratio-bar" role="meter" aria-valuenow={cell.ratioVsBest} aria-valuemin={1} aria-valuemax={10}>
+			<div
+				class="ratio-bar"
+				role="meter"
+				aria-valuenow={cell.ratioVsBest}
+				aria-valuemin={1}
+				aria-valuemax={10}
+			>
 				<div
 					class="ratio-bar__fill"
 					class:ratio-bar__fill--optimal={cell.ratioVsBest <= 1.05}
@@ -103,14 +106,13 @@
 		<!-- Technical depth via ExpandableDetail -->
 		<ExpandableDetail title="Technical details">
 			<p class="detail-note">
-				Energy per token is measured as total GPU energy divided by output tokens generated,
-				under steady-state conditions with warm-up samples excluded.
-				Ratio vs best is computed within the same backend + attention slice so filters
-				are directly comparable.
+				Energy per token is measured as total GPU energy divided by output tokens generated, under
+				steady-state conditions with warm-up samples excluded. Ratio vs best is computed within the
+				same backend + attention slice so filters are directly comparable.
 			</p>
 			<p class="detail-note">
-				Smartphone equivalence assumes 128 output tokens/query, 12 Wh per full charge,
-				and a 10M queries/month deployment scale.
+				Smartphone equivalence assumes 128 output tokens/query, 12 Wh per full charge, and a 10M
+				queries/month deployment scale.
 			</p>
 		</ExpandableDetail>
 	</div>

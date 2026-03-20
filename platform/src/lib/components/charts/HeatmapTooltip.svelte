@@ -15,9 +15,7 @@
 	const TOOLTIP_WIDTH = 220;
 
 	// Flip left if too close to right edge
-	const adjustedX = $derived(
-		x + TOOLTIP_WIDTH > containerWidth ? x - TOOLTIP_WIDTH - 8 : x + 12
-	);
+	const adjustedX = $derived(x + TOOLTIP_WIDTH > containerWidth ? x - TOOLTIP_WIDTH - 8 : x + 12);
 
 	const formattedEnergy = $derived(cell ? cell.energy.toFixed(4) : '');
 	const ratioText = $derived(
@@ -27,9 +25,7 @@
 				: `${cell.ratioVsBest.toFixed(1)}x more than optimal`
 			: ''
 	);
-	const equivalenceText = $derived(
-		cell ? formatEquivalence(smartphoneCharges(cell.energy)) : ''
-	);
+	const equivalenceText = $derived(cell ? formatEquivalence(smartphoneCharges(cell.energy)) : '');
 </script>
 
 {#if visible && cell}
@@ -49,8 +45,8 @@
 			<span
 				class="tooltip__value"
 				class:tooltip__value--efficient={cell.ratioVsBest <= 1.05}
-				class:tooltip__value--wasteful={cell.ratioVsBest > 2}
-			>{ratioText}</span>
+				class:tooltip__value--wasteful={cell.ratioVsBest > 2}>{ratioText}</span
+			>
 		</div>
 		<div class="tooltip__equivalence">
 			= {equivalenceText} per 10M queries/month

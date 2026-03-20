@@ -74,7 +74,7 @@
 				// Section shorter than viewport: reveal fully when it enters
 				heatmapReveal = start < windowH * 0.5 ? 1 : 0;
 			} else {
-				const progress = Math.max(0, Math.min(1, (-start) / totalScroll));
+				const progress = Math.max(0, Math.min(1, -start / totalScroll));
 				heatmapReveal = progress;
 			}
 		}
@@ -98,7 +98,7 @@
 			if (totalScroll <= 0) {
 				timeseriesProgress = rect.top < windowH * 0.5 ? 1 : 0;
 			} else {
-				timeseriesProgress = Math.max(0, Math.min(1, (-rect.top) / totalScroll));
+				timeseriesProgress = Math.max(0, Math.min(1, -rect.top / totalScroll));
 			}
 		}
 	}
@@ -111,9 +111,15 @@
 			hookRevealed = true;
 			runCounterAnimation();
 
-			setTimeout(() => { secondaryVisible = true; }, 400);
-			setTimeout(() => { tertiaryVisible = true; }, 800);
-			setTimeout(() => { equivalenceVisible = true; }, 1200);
+			setTimeout(() => {
+				secondaryVisible = true;
+			}, 400);
+			setTimeout(() => {
+				tertiaryVisible = true;
+			}, 800);
+			setTimeout(() => {
+				equivalenceVisible = true;
+			}, 1200);
 		}, 300);
 
 		// Set up scroll tracking for Beat 2 and Beat 4
@@ -153,9 +159,7 @@
 	});
 
 	// Beat 5: deployment bar chart derived values
-	const deploymentMax = $derived(
-		Math.max(...data.deploymentData.map((d) => d.energyPerToken))
-	);
+	const deploymentMax = $derived(Math.max(...data.deploymentData.map((d) => d.energyPerToken)));
 </script>
 
 <svelte:head>
@@ -176,20 +180,20 @@
 			<div class="beat-1__counter" class:revealed={hookRevealed}>
 				<span class="counter-number">{displayRatio}<span class="counter-x">x</span></span>
 			</div>
-			<p class="beat-1__secondary" class:visible={secondaryVisible}>
-				Same model. Same GPU.
-			</p>
-			<p class="beat-1__tertiary" class:visible={tertiaryVisible}>
-				Different configuration.
-			</p>
+			<p class="beat-1__secondary" class:visible={secondaryVisible}>Same model. Same GPU.</p>
+			<p class="beat-1__tertiary" class:visible={tertiaryVisible}>Different configuration.</p>
 			<p class="beat-1__equivalence" class:visible={equivalenceVisible}>
-				At scale: {data.worstCharges.toLocaleString()} vs {data.bestCharges.toLocaleString()} smartphone charges per month.
+				At scale: {data.worstCharges.toLocaleString()} vs {data.bestCharges.toLocaleString()} smartphone
+				charges per month.
 			</p>
 			<nav class="beat-1__skip" class:visible={equivalenceVisible}>
 				<a href="#beat-3">Skip to explorer &darr;</a>
 			</nav>
 		</div>
 	</NarrativeSection>
+
+	<!-- Beat 1 → 2 crossfade: gradient from dark hook section to light content -->
+	<div class="beat-transition beat-transition--dark-to-light" aria-hidden="true"></div>
 
 	<!-- ========================================================
 	     Beat 2: Reveal — progressive heatmap
@@ -214,9 +218,9 @@
 				<div class="step">
 					<h2 class="step__heading">What's driving that {data.energyRatio}x?</h2>
 					<p class="step__body">
-						The chart shows energy per output token for every combination of numerical
-						precision and batch size, using the PyTorch backend with SDPA attention.
-						Red is wasteful. Blue is efficient.
+						The chart shows energy per output token for every combination of numerical precision and
+						batch size, using the PyTorch backend with SDPA attention. Red is wasteful. Blue is
+						efficient.
 					</p>
 				</div>
 
@@ -224,8 +228,8 @@
 					<h2 class="step__heading">Precision and batch size dominate</h2>
 					<p class="step__body">
 						fp32 at batch&nbsp;1 (top-left, deep red) uses {data.energyRatio}x more energy per token
-						than the best-case configuration. Switching to bf16 and increasing batch size
-						transforms the same model into a dramatically more efficient system.
+						than the best-case configuration. Switching to bf16 and increasing batch size transforms
+						the same model into a dramatically more efficient system.
 					</p>
 				</div>
 
@@ -234,13 +238,17 @@
 						<p class="equivalence-card__label">At 10 million queries per month</p>
 						<div class="equivalence-card__comparison">
 							<div class="equivalence-card__item equivalence-card__item--bad">
-								<span class="equivalence-card__value wasteful">{data.worstCharges.toLocaleString()}</span>
+								<span class="equivalence-card__value wasteful"
+									>{data.worstCharges.toLocaleString()}</span
+								>
 								<span class="equivalence-card__unit">smartphone charges</span>
 								<span class="equivalence-card__config">fp32, batch&nbsp;1</span>
 							</div>
 							<div class="equivalence-card__vs">vs</div>
 							<div class="equivalence-card__item equivalence-card__item--good">
-								<span class="equivalence-card__value efficient">{data.bestCharges.toLocaleString()}</span>
+								<span class="equivalence-card__value efficient"
+									>{data.bestCharges.toLocaleString()}</span
+								>
 								<span class="equivalence-card__unit">smartphone charges</span>
 								<span class="equivalence-card__config">bf16, batch&nbsp;128</span>
 							</div>
@@ -259,9 +267,9 @@
 		<div class="beat-3__intro">
 			<h2 class="beat-3__heading">Now explore for yourself</h2>
 			<p class="beat-3__body">
-				Filter by inference backend (PyTorch, vLLM, TensorRT) and attention implementation.
-				Click any cell to see the full configuration breakdown. The {data.energyRatio}x gap
-				holds across every combination.
+				Filter by inference backend (PyTorch, vLLM, TensorRT) and attention implementation. Click
+				any cell to see the full configuration breakdown. The {data.energyRatio}x gap holds across
+				every combination.
 			</p>
 		</div>
 	</NarrativeSection>
@@ -288,16 +296,16 @@
 				<div class="step">
 					<h2 class="step__heading">Watch inference happen</h2>
 					<p class="step__body">
-						GPU power draw traces the shape of inference — ramp up, plateau, wind down.
-						The worst-case configuration sustains higher power throughout. Scroll to reveal both curves.
+						GPU power draw traces the shape of inference — ramp up, plateau, wind down. The
+						worst-case configuration sustains higher power throughout. Scroll to reveal both curves.
 					</p>
 				</div>
 
 				<div class="step">
 					<h2 class="step__heading">The difference is physical</h2>
 					<p class="step__body">
-						Every watt-second of difference is real energy drawn from the grid. The shaded
-						area under each curve is the total energy consumed — watch the gap open.
+						Every watt-second of difference is real energy drawn from the grid. The shaded area
+						under each curve is the total energy consumed — watch the gap open.
 					</p>
 				</div>
 
@@ -305,9 +313,10 @@
 					<div class="depth-callout">
 						<p class="depth-callout__label">At the end of inference</p>
 						<p class="depth-callout__body">
-							The worst-case configuration has consumed {data.energyRatio}x more energy
-							for the same number of tokens. Multiply by millions of daily queries —
-							and the choice of <em>how</em> you deploy matters as much as <em>what</em> you deploy.
+							The worst-case configuration has consumed {data.energyRatio}x more energy for the same
+							number of tokens. Multiply by millions of daily queries — and the choice of
+							<em>how</em>
+							you deploy matters as much as <em>what</em> you deploy.
 						</p>
 					</div>
 				</div>
@@ -339,17 +348,15 @@
 				</div>
 
 				<p class="lever__body">
-					Regulatory frameworks currently specify model capability thresholds but ignore
-					operational efficiency. A simple requirement to report energy per output token at
-					defined hardware configurations would make the {data.globalRatio}x variation visible
-					to procurement teams — before contracts are signed.
+					Regulatory frameworks currently specify model capability thresholds but ignore operational
+					efficiency. A simple requirement to report energy per output token at defined hardware
+					configurations would make the {data.globalRatio}x variation visible to procurement teams —
+					before contracts are signed.
 				</p>
 
 				<!-- Min/max energy range indicator -->
 				<div class="range-indicator">
-					<div class="range-indicator__label">
-						Energy per token across all configurations
-					</div>
+					<div class="range-indicator__label">Energy per token across all configurations</div>
 					<div class="range-indicator__bar-row">
 						<span class="range-indicator__end range-indicator__end--efficient">
 							{(data.minEnergyGlobal * 1000).toFixed(2)} mJ
@@ -369,10 +376,9 @@
 				<ExpandableDetail title="Technical depth: what benchmarking requires">
 					<p class="lever-note">
 						Standardised efficiency benchmarking requires three components: a fixed hardware
-						reference (e.g., an A100 80GB), a canonical inference workload (fixed prompt
-						length, batch size, output tokens), and a reporting format compatible with
-						existing procurement documentation. The llenergymeasure schema provides a
-						machine-readable starting point.
+						reference (e.g., an A100 80GB), a canonical inference workload (fixed prompt length,
+						batch size, output tokens), and a reporting format compatible with existing procurement
+						documentation. The llenergymeasure schema provides a machine-readable starting point.
 					</p>
 					<p class="lever-note">
 						ISO/IEC and NIST AI Risk Management frameworks already include provisions for
@@ -393,9 +399,9 @@
 				</div>
 
 				<p class="lever__body">
-					Research teams default to PyTorch for reproducibility. Production systems often
-					inherit those defaults. Switching to vLLM or TensorRT at the same precision
-					reduces energy per token materially — with no change to model weights or hardware.
+					Research teams default to PyTorch for reproducibility. Production systems often inherit
+					those defaults. Switching to vLLM or TensorRT at the same precision reduces energy per
+					token materially — with no change to model weights or hardware.
 				</p>
 
 				<!-- Backend comparison bar chart -->
@@ -409,7 +415,9 @@
 									class="bar-fill"
 									class:bar-fill--worst={item.backend === 'pytorch'}
 									class:bar-fill--best={item.backend === 'tensorrt'}
-									style="width: {deploymentMax > 0 ? (item.energyPerToken / deploymentMax) * 100 : 0}%"
+									style="width: {deploymentMax > 0
+										? (item.energyPerToken / deploymentMax) * 100
+										: 0}%"
 								></div>
 							</div>
 							<span class="bar-value">{(item.energyPerToken * 1000).toFixed(2)} mJ</span>
@@ -419,11 +427,10 @@
 
 				<ExpandableDetail title="Technical depth: backend efficiency differences">
 					<p class="lever-note">
-						vLLM and TensorRT achieve efficiency gains through continuous batching,
-						kernel fusion, and memory management optimisations absent in vanilla PyTorch.
-						These gains compound: at higher batch sizes, TensorRT's fused attention
-						kernels substantially reduce memory bandwidth pressure compared to eager
-						or SDPA attention.
+						vLLM and TensorRT achieve efficiency gains through continuous batching, kernel fusion,
+						and memory management optimisations absent in vanilla PyTorch. These gains compound: at
+						higher batch sizes, TensorRT's fused attention kernels substantially reduce memory
+						bandwidth pressure compared to eager or SDPA attention.
 					</p>
 					<p class="lever-note">
 						Switching backends requires revalidating output quality at deployment — a one-time
@@ -438,15 +445,17 @@
 					<span class="lever__number">3</span>
 					<div>
 						<h3 class="lever__title">Procurement</h3>
-						<p class="lever__action">Include efficiency configuration requirements in AI service contracts</p>
+						<p class="lever__action">
+							Include efficiency configuration requirements in AI service contracts
+						</p>
 					</div>
 				</div>
 
 				<p class="lever__body">
-					AI service contracts specify SLA uptime, latency targets, and model version — but
-					rarely operational efficiency. Adding a minimum energy-per-token threshold
-					(verified at contract renewal) shifts the burden of configuration optimisation
-					to the provider, where it belongs.
+					AI service contracts specify SLA uptime, latency targets, and model version — but rarely
+					operational efficiency. Adding a minimum energy-per-token threshold (verified at contract
+					renewal) shifts the burden of configuration optimisation to the provider, where it
+					belongs.
 				</p>
 
 				<!-- 8x cost framing -->
@@ -456,23 +465,23 @@
 						<span class="procurement-callout__label">energy cost difference</span>
 					</div>
 					<p class="procurement-callout__body">
-						Between worst and best configuration for the same model, on the same hardware.
-						A contract that doesn't specify configuration effectively allows the provider
-						to deliver the {data.energyRatio}x worse outcome at the same price.
+						Between worst and best configuration for the same model, on the same hardware. A
+						contract that doesn't specify configuration effectively allows the provider to deliver
+						the {data.energyRatio}x worse outcome at the same price.
 					</p>
 				</div>
 
 				<ExpandableDetail title="Technical depth: contract specification language">
 					<p class="lever-note">
-						An efficiency clause might read: "The service shall operate at no greater than
-						[X] mJ per output token at the contracted hardware tier, measured under the
-						llenergymeasure benchmark protocol at 90th-percentile load." X can be derived
-						from the best-known configuration for the contracted model.
+						An efficiency clause might read: "The service shall operate at no greater than [X] mJ
+						per output token at the contracted hardware tier, measured under the llenergymeasure
+						benchmark protocol at 90th-percentile load." X can be derived from the best-known
+						configuration for the contracted model.
 					</p>
 					<p class="lever-note">
-						Measurement cost is low: llenergymeasure benchmarks run in under 30 minutes
-						on standard ML infrastructure. The measurement overhead does not justify
-						exclusion from contract terms.
+						Measurement cost is low: llenergymeasure benchmarks run in under 30 minutes on standard
+						ML infrastructure. The measurement overhead does not justify exclusion from contract
+						terms.
 					</p>
 				</ExpandableDetail>
 			</div>
@@ -584,6 +593,22 @@
 
 	.beat-1__skip a:hover {
 		color: rgba(255, 255, 255, 0.8);
+	}
+
+	/* ── Beat transitions ── */
+	.beat-transition {
+		width: 100%;
+		height: 5rem;
+		pointer-events: none;
+	}
+
+	.beat-transition--dark-to-light {
+		/* Gradient from the dark Beat 1 background (#0f0f0f) to the page background */
+		background: linear-gradient(to bottom, #0f0f0f, var(--color-bg));
+		/* Negative margin pulls this up so it overlaps the end of Beat 1 */
+		margin-top: -5rem;
+		position: relative;
+		z-index: 1;
 	}
 
 	/* ── Beat 2: Reveal ── */
@@ -1071,6 +1096,51 @@
 
 		.bar-value {
 			width: auto;
+		}
+	}
+
+	/* ── Mobile (375px) ── */
+	@media (max-width: 30rem) {
+		/* Beat 1: scale down secondary/tertiary text on very small screens */
+		.beat-1__secondary {
+			font-size: var(--text-2xl);
+		}
+
+		.beat-1__tertiary {
+			font-size: var(--text-xl);
+		}
+
+		/* Beat 2: tighter equivalence card on mobile */
+		.equivalence-card {
+			padding: var(--space-4);
+		}
+
+		.equivalence-card__value {
+			font-size: var(--text-2xl);
+		}
+
+		/* Beat 4: depth callout at mobile */
+		.depth-callout {
+			padding: var(--space-4);
+		}
+
+		/* Beat 5: smaller header on mobile */
+		.beat-5__title {
+			font-size: var(--text-3xl);
+		}
+
+		.beat-5__intro {
+			font-size: var(--text-base);
+		}
+
+		/* Lever action text */
+		.lever__action {
+			font-size: var(--text-lg);
+		}
+
+		/* Procurement callout number */
+		.procurement-callout__number {
+			font-size: var(--text-3xl);
 		}
 	}
 

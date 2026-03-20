@@ -13,8 +13,7 @@ export function toHeatmapData(
 	attn: string
 ): HeatmapCell[] {
 	const filtered = results.filter(
-		(r) =>
-			r.backend === backend && r.effective_config.attn_implementation === attn
+		(r) => r.backend === backend && r.effective_config.attn_implementation === attn
 	);
 
 	if (filtered.length === 0) return [];

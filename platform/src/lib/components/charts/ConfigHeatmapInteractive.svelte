@@ -83,7 +83,7 @@
 	<HeatmapFilters
 		{selectedBackend}
 		{selectedAttn}
-		selectedMetric={selectedMetric}
+		{selectedMetric}
 		onBackendChange={handleBackendChange}
 		onAttnChange={handleAttnChange}
 		onMetricChange={handleMetricChange}
@@ -131,18 +131,18 @@
 		<p class="chart-note">
 			Each cell represents one hardware/software configuration. The x-axis shows numerical precision
 			(fp32 → int8) and the y-axis shows inference batch size. Colour encodes energy per output
-			token (red = high energy, blue = efficient) when viewing the energy metric, or throughput
-			in tokens/second when viewing the throughput metric.
+			token (red = high energy, blue = efficient) when viewing the energy metric, or throughput in
+			tokens/second when viewing the throughput metric.
 		</p>
 		<p class="chart-note">
-			Filters select one backend (PyTorch / vLLM / TensorRT) and one attention implementation
-			(eager / SDPA / Flash v2) at a time. The ratio vs best is always computed within the
-			selected slice — so "3x" means three times worse than the most efficient configuration
-			in that slice, not globally.
+			Filters select one backend (PyTorch / vLLM / TensorRT) and one attention implementation (eager
+			/ SDPA / Flash v2) at a time. The ratio vs best is always computed within the selected slice —
+			so "3x" means three times worse than the most efficient configuration in that slice, not
+			globally.
 		</p>
 		<p class="chart-note">
-			Scroll-wheel or pinch to zoom. Click any cell to see full details below the chart.
-			Click again to deselect.
+			Scroll-wheel or pinch to zoom. Click any cell to see full details below the chart. Click again
+			to deselect.
 		</p>
 	</ExpandableDetail>
 </div>

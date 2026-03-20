@@ -46,8 +46,8 @@
 					role="radio"
 					aria-checked={selectedBackend === value}
 					onclick={() => onBackendChange(value)}
-					type="button"
-				>{label}</button>
+					type="button">{label}</button
+				>
 			{/each}
 		</div>
 	</div>
@@ -62,8 +62,8 @@
 					role="radio"
 					aria-checked={selectedAttn === value}
 					onclick={() => onAttnChange(value)}
-					type="button"
-				>{label}</button>
+					type="button">{label}</button
+				>
 			{/each}
 		</div>
 	</div>
@@ -78,8 +78,8 @@
 					role="radio"
 					aria-checked={selectedMetric === value}
 					onclick={() => onMetricChange(value)}
-					type="button"
-				>{label}</button>
+					type="button">{label}</button
+				>
 			{/each}
 		</div>
 	</div>

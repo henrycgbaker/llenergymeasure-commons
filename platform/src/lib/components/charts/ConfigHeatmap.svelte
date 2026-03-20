@@ -57,9 +57,7 @@
 	// D3 band scales
 	const xScale = $derived(d3.scaleBand().domain(precisions).range([0, innerWidth]).padding(0.05));
 
-	const yScale = $derived(
-		d3.scaleBand().domain(batchSizes).range([innerHeight, 0]).padding(0.05)
-	);
+	const yScale = $derived(d3.scaleBand().domain(batchSizes).range([innerHeight, 0]).padding(0.05));
 
 	// Colour scale: depends on metric
 	const energyValues = $derived(cells.map((c) => c.energy));
@@ -90,11 +88,7 @@
 
 	// Set of visible cell keys
 	const visibleKeys = $derived(
-		new Set(
-			sortedCells
-				.slice(0, visibleCount)
-				.map((c) => `${c.precision}-${c.batch_size}`)
-		)
+		new Set(sortedCells.slice(0, visibleCount).map((c) => `${c.precision}-${c.batch_size}`))
 	);
 
 	// Best and worst cells (by energy)
@@ -109,7 +103,10 @@
 		if (!xAxisEl || !yAxisEl) return;
 		d3.select(xAxisEl).call(d3.axisBottom(xScale).tickSizeOuter(0));
 		d3.select(yAxisEl).call(
-			d3.axisLeft(yScale).tickFormat((d) => `batch ${d}`).tickSizeOuter(0)
+			d3
+				.axisLeft(yScale)
+				.tickFormat((d) => `batch ${d}`)
+				.tickSizeOuter(0)
 		);
 	}
 
@@ -203,12 +200,8 @@
 				const prevBatch = Number(batchSizes[i - 1]);
 				const currBatch = Number(batchStr);
 
-				const prevEnergies = cells
-					.filter((c) => c.batch_size === prevBatch)
-					.map((c) => c.energy);
-				const currEnergies = cells
-					.filter((c) => c.batch_size === currBatch)
-					.map((c) => c.energy);
+				const prevEnergies = cells.filter((c) => c.batch_size === prevBatch).map((c) => c.energy);
+				const currEnergies = cells.filter((c) => c.batch_size === currBatch).map((c) => c.energy);
 
 				const prevAvg = prevEnergies.reduce((s, e) => s + e, 0) / (prevEnergies.length || 1);
 				const currAvg = currEnergies.reduce((s, e) => s + e, 0) / (currEnergies.length || 1);
@@ -244,9 +237,7 @@
 	<!-- Reset zoom button -->
 	{#if interactive && zoomTransform.k > 1}
 		<div class="zoom-reset-wrapper">
-			<button class="zoom-reset-btn" onclick={handleResetZoom} type="button">
-				Reset zoom
-			</button>
+			<button class="zoom-reset-btn" onclick={handleResetZoom} type="button"> Reset zoom </button>
 		</div>
 	{/if}
 
@@ -271,20 +262,30 @@
 					{@const h = yScale.bandwidth()}
 					{@const key = `${cell.precision}-${cell.batch_size}`}
 					{@const isVisible = visibleKeys.has(key)}
-					{@const isWorst = cell.precision === worstCell?.precision && cell.batch_size === worstCell?.batch_size}
-					{@const isBest = cell.precision === bestCell?.precision && cell.batch_size === bestCell?.batch_size}
+					{@const isWorst =
+						cell.precision === worstCell?.precision && cell.batch_size === worstCell?.batch_size}
+					{@const isBest =
+						cell.precision === bestCell?.precision && cell.batch_size === bestCell?.batch_size}
 					{@const isSelected = isSelectedCell(cell)}
-					{@const revealOrder = sortedCells.findIndex((c) => c.precision === cell.precision && c.batch_size === cell.batch_size)}
+					{@const revealOrder = sortedCells.findIndex(
+						(c) => c.precision === cell.precision && c.batch_size === cell.batch_size
+					)}
 					<g
 						class="cell-group"
 						class:cell-group--interactive={interactive}
 						role={interactive ? 'button' : undefined}
 						tabindex={interactive ? 0 : undefined}
-						aria-label={interactive ? `${cell.label}: ${cell.energy.toFixed(4)} J/token` : undefined}
+						aria-label={interactive
+							? `${cell.label}: ${cell.energy.toFixed(4)} J/token`
+							: undefined}
 						onmouseover={interactive ? (e) => handleCellMouseover(e, cell) : undefined}
 						onmouseout={interactive ? handleCellMouseout : undefined}
 						onclick={interactive ? () => handleCellClick(cell) : undefined}
-						onkeydown={interactive ? (e) => { if (e.key === 'Enter' || e.key === ' ') handleCellClick(cell); } : undefined}
+						onkeydown={interactive
+							? (e) => {
+									if (e.key === 'Enter' || e.key === ' ') handleCellClick(cell);
+								}
+							: undefined}
 						ontouchstart={interactive ? (e) => handleCellTouchstart(e, cell) : undefined}
 					>
 						<rect
@@ -303,7 +304,8 @@
 							stroke-width={isSelected ? 3 : isWorst || isBest ? 2 : 0}
 							stroke-dasharray={!isSelected && (isWorst || isBest) ? '4 2' : undefined}
 							rx="2"
-							style="opacity: {isVisible ? 1 : 0}; transition: opacity 200ms ease {revealOrder * 30}ms;"
+							style="opacity: {isVisible ? 1 : 0}; transition: opacity 200ms ease {revealOrder *
+								30}ms;"
 						/>
 						<!-- Best/worst labels -->
 						{#if isBest && isVisible}
@@ -313,8 +315,8 @@
 								text-anchor="middle"
 								font-size="10"
 								fill="var(--color-energy-efficient)"
-								font-weight="bold"
-							>Best</text>
+								font-weight="bold">Best</text
+							>
 						{/if}
 						{#if isWorst && isVisible}
 							<text
@@ -323,8 +325,8 @@
 								text-anchor="middle"
 								font-size="10"
 								fill="var(--color-energy-wasteful)"
-								font-weight="bold"
-							>Worst</text>
+								font-weight="bold">Worst</text
+							>
 						{/if}
 					</g>
 				{/each}
@@ -341,12 +343,9 @@
 						stroke-dasharray="4 3"
 						opacity="0.4"
 					/>
-					<text
-						x={line.x2 + 4}
-						y={line.y1 + 4}
-						font-size="9"
-						fill="var(--color-text-muted)"
-					>{line.label}</text>
+					<text x={line.x2 + 4} y={line.y1 + 4} font-size="9" fill="var(--color-text-muted)"
+						>{line.label}</text
+					>
 				{/each}
 			</g>
 
@@ -358,8 +357,8 @@
 				y={innerHeight + MARGIN.bottom - 6}
 				text-anchor="middle"
 				font-size="12"
-				fill="var(--color-text-muted)"
-			>Precision</text>
+				fill="var(--color-text-muted)">Precision</text
+			>
 
 			<!-- Y Axis -->
 			<g bind:this={yAxisEl} class="axis-group" />
