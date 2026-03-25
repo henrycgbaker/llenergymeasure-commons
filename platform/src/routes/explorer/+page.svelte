@@ -4,8 +4,10 @@
 	import ExplorerTabs from '$lib/components/charts/ExplorerTabs.svelte';
 	import ExplorerFilters from '$lib/components/charts/ExplorerFilters.svelte';
 	import ConfigHeatmapInteractive from '$lib/components/charts/ConfigHeatmapInteractive.svelte';
+	import DownloadButton from '$lib/components/charts/DownloadButton.svelte';
 	import MethodologyLink from '$lib/components/charts/MethodologyLink.svelte';
 	import { applyExplorerFilters } from '$lib/data/transforms/explorerFilters.js';
+	import { toCSV, toJSON, triggerDownload } from '$lib/data/transforms/downloadUtils.js';
 	import type { ExplorerFilterState } from '$lib/data/types.js';
 	import type { PageData } from './$types';
 
@@ -39,6 +41,14 @@
 	function handleTabChange(tab: string) {
 		activeTab = tab;
 	}
+
+	function downloadFullCSV() {
+		triggerDownload(toCSV(data.allResults), 'llem-full-dataset.csv', 'text/csv;charset=utf-8;');
+	}
+
+	function downloadFullJSON() {
+		triggerDownload(toJSON(data.allResults), 'llem-full-dataset.json', 'application/json');
+	}
 </script>
 
 <DataBanner />
@@ -54,6 +64,10 @@
 	<ExplorerFilters {filterState} onFilterChange={handleFilterChange} />
 
 	<div class="toolbar">
+		<DownloadButton
+			results={filteredResults}
+			totalCount={data.allResults.length}
+		/>
 		<span class="filter-count">
 			{filteredResults.length} of {data.allResults.length} configurations
 		</span>
@@ -80,6 +94,21 @@
 	</div>
 
 	<footer class="explorer-footer">
+		<div class="full-download">
+			<h2 class="full-download__heading">Download complete dataset</h2>
+			<p class="full-download__desc">
+				Download all {data.allResults.length} configurations including energy, throughput, and hardware
+				configuration details.
+			</p>
+			<div class="full-download__actions">
+				<button class="full-dl-btn" onclick={downloadFullCSV} type="button">
+					Download CSV
+				</button>
+				<button class="full-dl-btn" onclick={downloadFullJSON} type="button">
+					Download JSON
+				</button>
+			</div>
+		</div>
 		<MethodologyLink />
 	</footer>
 </PageLayout>
@@ -144,6 +173,57 @@
 		margin-top: var(--space-8);
 		padding-top: var(--space-6);
 		border-top: 1px solid var(--color-border);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-6);
+	}
+
+	.full-download {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+	}
+
+	.full-download__heading {
+		font-family: var(--font-heading);
+		font-size: var(--text-lg);
+		font-weight: var(--weight-bold);
+		color: var(--color-text);
+		margin: 0;
+	}
+
+	.full-download__desc {
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+		max-width: 55ch;
+	}
+
+	.full-download__actions {
+		display: flex;
+		gap: var(--space-3);
+		flex-wrap: wrap;
+	}
+
+	.full-dl-btn {
+		padding: var(--space-2) var(--space-5);
+		border: 1px solid var(--color-primary);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		color: var(--color-primary);
+		font-size: var(--text-sm);
+		font-family: var(--font-body);
+		font-weight: var(--weight-medium);
+		cursor: pointer;
+		transition:
+			background-color var(--transition-fast),
+			color var(--transition-fast);
+	}
+
+	.full-dl-btn:hover {
+		background: var(--color-primary);
+		color: var(--color-surface);
 	}
 
 	@media (max-width: 600px) {
