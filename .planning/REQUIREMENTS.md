@@ -22,11 +22,11 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **VIZ-02**: User can interact with heatmap (hover for details, zoom, select regions)
 - [x] **VIZ-03**: User sees animated power timeseries comparing configurations side-by-side (e.g. fp32 vs fp16)
 - [x] **VIZ-04**: User can trigger and control timeseries animation (play/pause, scrub)
-- [ ] **VIZ-05**: User sees a 3D surface visualisation (loss-landscape style) of the configuration space
+- [x] **VIZ-05**: User sees a 3D surface visualisation (loss-landscape style) of the configuration space
 - [ ] **VIZ-06**: User can rotate and zoom the 3D surface with mouse/touch
-- [ ] **VIZ-07**: User sees a PCA-reduced 3D projection of all configuration dimensions
-- [ ] **VIZ-08**: User sees a parallel coordinates plot showing high-dimensional relationships
-- [ ] **VIZ-09**: User can brush-select ranges on parallel coordinates axes to filter data
+- [x] **VIZ-07**: User sees a PCA-reduced 3D projection of all configuration dimensions
+- [x] **VIZ-08**: User sees a parallel coordinates plot showing high-dimensional relationships
+- [x] **VIZ-09**: User can brush-select ranges on parallel coordinates axes to filter data
 
 ### Data & Methodology
 
@@ -35,8 +35,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DATA-03**: User can access a methodology page explaining how measurements are taken
 - [x] **DATA-04**: Every chart links to the methodology page via "How was this measured?"
 - [x] **DATA-05**: User sees relatable energy equivalences alongside every energy figure
-- [ ] **DATA-06**: User can download data per chart (CSV/JSON)
-- [ ] **DATA-07**: User can download the full dataset
+- [x] **DATA-06**: User can download data per chart (CSV/JSON)
+- [x] **DATA-07**: User can download the full dataset
 - [x] **DATA-08**: User sees an "About the data" coverage statement (what's measured, what's not, fixture data disclosure)
 
 ### Distribution
@@ -98,18 +98,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIZ-02 | Phase 2 | Complete |
 | VIZ-03 | Phase 2 | Complete |
 | VIZ-04 | Phase 2 | Complete |
-| VIZ-05 | Phase 3 | Pending |
+| VIZ-05 | Phase 3 | Complete |
 | VIZ-06 | Phase 3 | Pending |
-| VIZ-07 | Phase 3 | Pending |
-| VIZ-08 | Phase 3 | Pending |
-| VIZ-09 | Phase 3 | Pending |
+| VIZ-07 | Phase 3 | Complete |
+| VIZ-08 | Phase 3 | Complete |
+| VIZ-09 | Phase 3 | Complete |
 | DATA-01 | Phase 1 | Pending |
 | DATA-02 | Phase 1 | Pending |
 | DATA-03 | Phase 1 | Complete |
 | DATA-04 | Phase 2 | Complete |
 | DATA-05 | Phase 2 | Complete |
-| DATA-06 | Phase 3 | Pending |
-| DATA-07 | Phase 3 | Pending |
+| DATA-06 | Phase 3 | Complete |
+| DATA-07 | Phase 3 | Complete |
 | DATA-08 | Phase 1 | Complete |
 | DIST-01 | Phase 4 | Pending |
 | DIST-02 | Phase 4 | Pending |

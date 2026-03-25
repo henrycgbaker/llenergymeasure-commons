@@ -90,7 +90,7 @@ download what they need.
      any axis to filter the data, and the filtered state is reflected across all charts.
   4. A user can download the data underlying any individual chart as CSV or JSON, and
      can download the complete fixture dataset as a single file.
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md -- Data transforms, types, PCA build script, download utilities (TDD)
@@ -123,5 +123,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-03-20 |
 | 2. Scroll Narrative | 4/5 | In Progress|  |
-| 3. Explorer + Advanced Visualisations | 0/4 | Not started | - |
+| 3. Explorer + Advanced Visualisations | 1/4 | In Progress|  |
 | 4. Distribution + Polish | 0/TBD | Not started | - |

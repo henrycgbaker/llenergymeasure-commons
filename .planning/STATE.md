@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "02-05 checkpoint:human-verify — awaiting user scroll test approval"
-last_updated: "2026-03-20T20:23:21.428Z"
+stopped_at: Completed 03-01-PLAN.md (explorer data transforms)
+last_updated: "2026-03-25T23:34:20.782Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 11
+  completed_plans: 8
   percent: 20
 ---
 
@@ -56,6 +56,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 02-scroll-narrative P03 | 7min | 2 tasks | 6 files |
 | Phase 02-scroll-narrative P04 | 7 | 2 tasks | 4 files |
 | Phase 02-scroll-narrative P05 | 12 | 1 tasks | 11 files |
+| Phase 03-explorer-advanced-visualisations P01 | 4 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - [Phase 02-scroll-narrative]: SvelteSet imported from svelte/reactivity (not svelte) for reactive deduplication
 - [Phase 02-scroll-narrative]: Beat 4 equivalences use avg_energy_per_token_j (static per config, not scroll-driven) — consistent with heatmap tooltip pattern
 - [Phase 02-scroll-narrative]: Dark-to-light transition uses a gradient div with negative margin-top to overlap Beat 1 boundary
+- [Phase 03-explorer-advanced-visualisations]: ml-pca in platform/ resolved via createRequire from root scripts/
+- [Phase 03-explorer-advanced-visualisations]: PCA feature matrix: log2(batch_size) + ordinal encodings; 3 components explain 66.7% variance
+- [Phase 03-explorer-advanced-visualisations]: Surface grid fills missing cells with global mean of non-missing cells (neutral interpolation)
 
 ### Pending Todos
 
@@ -100,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T20:23:12.507Z
-Stopped at: 02-05 checkpoint:human-verify — awaiting user scroll test approval
+Last session: 2026-03-25T23:34:20.777Z
+Stopped at: Completed 03-01-PLAN.md (explorer data transforms)
 Resume file: None
