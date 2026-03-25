@@ -18,8 +18,8 @@
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 	let webglUnavailable = $state(false);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let PlotlyModule = $state<any>(null);
+	// Plotly has no @types package; using unknown with runtime casts
+	let PlotlyModule = $state<unknown>(null);
 
 	function isWebGLAvailable(): boolean {
 		try {
@@ -30,6 +30,14 @@
 		}
 	}
 
+	function getPlotly() {
+		return PlotlyModule as {
+			newPlot: (_el: HTMLElement, _data: unknown[], _layout: unknown, _config: unknown) => void;
+			react: (_el: HTMLElement, _data: unknown[], _layout: unknown, _config: unknown) => void;
+			purge: (_el: HTMLElement) => void;
+		} | null;
+	}
+
 	function scaleToRange(value: number, min: number, max: number, outMin: number, outMax: number) {
 		if (max === min) return (outMin + outMax) / 2;
 		return outMin + ((value - min) / (max - min)) * (outMax - outMin);
@@ -37,7 +45,6 @@
 
 	function buildTrace() {
 		const points = pcaProjection.points;
-		const variance = pcaProjection.explained_variance;
 
 		const throughputs = points.map((p) => p.throughput);
 		const minT = Math.min(...throughputs);
@@ -46,8 +53,8 @@
 		const filteredSet = new Set(filteredExperimentIds);
 
 		return {
-			type: 'scatter3d' as const,
-			mode: 'markers' as const,
+			type: 'scatter3d',
+			mode: 'markers',
 			x: points.map((p) => p.pc1),
 			y: points.map((p) => p.pc2),
 			z: points.map((p) => p.pc3),
@@ -60,8 +67,7 @@
 			},
 			hovertemplate:
 				'PC1: %{x:.2f}<br>PC2: %{y:.2f}<br>PC3: %{z:.2f}<br>Energy: %{customdata[0]:.4f} J/tok<br>%{customdata[1]} / %{customdata[2]} / bs%{customdata[3]}<extra></extra>',
-			customdata: points.map((p) => [p.energy, p.backend, p.precision, p.batch_size]),
-			_variance: variance
+			customdata: points.map((p) => [p.energy, p.backend, p.precision, p.batch_size])
 		};
 	}
 
@@ -80,9 +86,10 @@
 	}
 
 	function renderChart() {
-		if (!PlotlyModule || !plotDiv) return;
+		const Plotly = getPlotly();
+		if (!Plotly || !plotDiv) return;
 		const config = { responsive: true, displayModeBar: false };
-		PlotlyModule.newPlot(plotDiv, [buildTrace()], buildLayout(), config);
+		Plotly.newPlot(plotDiv, [buildTrace()], buildLayout(), config);
 	}
 
 	onMount(async () => {
@@ -95,25 +102,26 @@
 	});
 
 	onDestroy(() => {
-		if (PlotlyModule && plotDiv) {
-			PlotlyModule.purge(plotDiv);
+		const Plotly = getPlotly();
+		if (Plotly && plotDiv) {
+			Plotly.purge(plotDiv);
 		}
 	});
 
-	// Reactive update when filter changes
+	// Reactive update when filter or projection changes
 	$effect(() => {
 		// Capture reactive dependencies
 		const _ids = filteredExperimentIds;
 		const _projection = pcaProjection;
 
-		if (!PlotlyModule || !plotDiv) return;
+		const Plotly = getPlotly();
+		if (!Plotly || !plotDiv) return;
 
-		// Rebuild trace with updated opacity/projection
 		void _projection;
 		void _ids;
 
 		const config = { responsive: true, displayModeBar: false };
-		PlotlyModule.react(plotDiv, [buildTrace()], buildLayout(), config);
+		Plotly.react(plotDiv, [buildTrace()], buildLayout(), config);
 	});
 </script>
 

@@ -4,9 +4,13 @@
 	import ExplorerTabs from '$lib/components/charts/ExplorerTabs.svelte';
 	import ExplorerFilters from '$lib/components/charts/ExplorerFilters.svelte';
 	import ConfigHeatmapInteractive from '$lib/components/charts/ConfigHeatmapInteractive.svelte';
+	import Surface3D from '$lib/components/charts/Surface3D.svelte';
+	import PCAProjection from '$lib/components/charts/PCAProjection.svelte';
+	import ParallelCoordinates from '$lib/components/charts/ParallelCoordinates.svelte';
 	import DownloadButton from '$lib/components/charts/DownloadButton.svelte';
 	import MethodologyLink from '$lib/components/charts/MethodologyLink.svelte';
 	import { applyExplorerFilters } from '$lib/data/transforms/explorerFilters.js';
+	import { toParallelData } from '$lib/data/transforms/parallelCoordsData.js';
 	import { toCSV, toJSON, triggerDownload } from '$lib/data/transforms/downloadUtils.js';
 	import type { ExplorerFilterState } from '$lib/data/types.js';
 	import type { PageData } from './$types';
@@ -36,6 +40,13 @@
 	// ── Handlers ────────────────────────────────────────────────────────────
 	function handleFilterChange(partial: Partial<ExplorerFilterState>) {
 		filterState = { ...filterState, ...partial };
+	}
+
+	function handleParallelBrush(ranges: {
+		energyRange?: [number, number] | null;
+		batchRange?: [number, number] | null;
+	}) {
+		filterState = { ...filterState, ...ranges };
 	}
 
 	function handleTabChange(tab: string) {
@@ -77,17 +88,17 @@
 
 	<div class="chart-area">
 		{#if activeTab === 'surface'}
-			<div class="placeholder">
-				<p class="placeholder-text">3D Surface - coming soon</p>
-			</div>
+			<Surface3D results={filteredResults} />
 		{:else if activeTab === 'pca'}
-			<div class="placeholder">
-				<p class="placeholder-text">PCA Projection - coming soon</p>
-			</div>
+			<PCAProjection
+				pcaProjection={data.pcaProjection}
+				filteredExperimentIds={filteredResults.map((r) => r.experiment_id)}
+			/>
 		{:else if activeTab === 'parallel'}
-			<div class="placeholder">
-				<p class="placeholder-text">Parallel Coordinates - coming soon</p>
-			</div>
+			<ParallelCoordinates
+				data={toParallelData(filteredResults)}
+				onBrush={handleParallelBrush}
+			/>
 		{:else if activeTab === 'heatmap'}
 			<ConfigHeatmapInteractive allResults={filteredResults} />
 		{/if}
@@ -150,23 +161,6 @@
 		min-height: 500px;
 		width: 100%;
 		padding: var(--space-6) 0;
-	}
-
-	.placeholder {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 350px;
-		background: var(--color-bg);
-		border: 1px dashed var(--color-border);
-		border-radius: var(--radius-md);
-	}
-
-	.placeholder-text {
-		color: var(--color-text-muted);
-		font-size: var(--text-sm);
-		font-style: italic;
-		margin: 0;
 	}
 
 	.explorer-footer {

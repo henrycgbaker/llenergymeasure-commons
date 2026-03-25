@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import ConfigHeatmapInteractive from './ConfigHeatmapInteractive.svelte';
-	import { toSurfaceGrid } from '$lib/data/transforms/surfaceData.js';
-	import type { ExperimentResult } from '$lib/data/types.js';
+	import { onMount, onDestroy } from "svelte";
+	import ConfigHeatmapInteractive from "./ConfigHeatmapInteractive.svelte";
+	import { toSurfaceGrid } from "$lib/data/transforms/surfaceData.js";
+	import type { ExperimentResult } from "$lib/data/types.js";
 
 	interface Props {
 		results: ExperimentResult[];
@@ -10,49 +10,58 @@
 		yAxis?: string;
 	}
 
-	let { results, xAxis = $bindable('precision'), yAxis = $bindable('batch_size') }: Props =
+	let { results, xAxis = $bindable("precision"), yAxis = $bindable("batch_size") }: Props =
 		$props();
 
 	const AXIS_OPTIONS = [
-		{ value: 'precision', label: 'Precision' },
-		{ value: 'batch_size', label: 'Batch Size' },
-		{ value: 'backend', label: 'Backend' },
-		{ value: 'attn_implementation', label: 'Attention' }
+		{ value: "precision", label: "Precision" },
+		{ value: "batch_size", label: "Batch Size" },
+		{ value: "backend", label: "Backend" },
+		{ value: "attn_implementation", label: "Attention" }
 	];
 
 	// RdBu colour scale matching design tokens
 	const COLORSCALE: [number, string][] = [
-		[0, '#2166ac'],
-		[0.5, '#f7f7f7'],
-		[1, '#d6604d']
+		[0, "#2166ac"],
+		[0.5, "#f7f7f7"],
+		[1, "#d6604d"]
 	];
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 	let webglUnavailable = $state(false);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let PlotlyModule = $state<any>(null);
+	// Plotly has no @types package; using unknown with runtime casts
+	let PlotlyModule = $state<unknown>(null);
 
 	function isWebGLAvailable(): boolean {
 		try {
-			const canvas = document.createElement('canvas');
-			return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+			const canvas = document.createElement("canvas");
+			return !!(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
 		} catch {
 			return false;
 		}
 	}
 
+	function getPlotly() {
+		return PlotlyModule as {
+			newPlot: (_el: HTMLElement, _data: unknown[], _layout: unknown, _config: unknown) => void;
+			react: (_el: HTMLElement, _data: unknown[], _layout: unknown, _config: unknown) => void;
+			purge: (_el: HTMLElement) => void;
+		} | null;
+	}
+
 	function renderChart() {
-		if (!PlotlyModule || !plotDiv) return; // plotDiv bound via $state
+		const Plotly = getPlotly();
+		if (!Plotly || !plotDiv) return;
 
 		const grid = toSurfaceGrid(results, xAxis, yAxis);
 
 		const trace = {
-			type: 'surface' as const,
+			type: "surface",
 			x: grid.x,
 			y: grid.y,
 			z: grid.z,
 			colorscale: COLORSCALE,
-			hovertemplate: '%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>'
+			hovertemplate: "%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>"
 		};
 
 		const layout = {
@@ -60,15 +69,15 @@
 				camera: { eye: { x: 1.5, y: 1.5, z: 1.0 } },
 				xaxis: { title: grid.xLabel },
 				yaxis: { title: grid.yLabel },
-				zaxis: { title: 'Energy (J/token)' }
+				zaxis: { title: "Energy (J/token)" }
 			},
 			margin: { l: 0, r: 0, t: 40, b: 0 },
-			paper_bgcolor: 'transparent'
+			paper_bgcolor: "transparent"
 		};
 
 		const config = { responsive: true, displayModeBar: false };
 
-		PlotlyModule.newPlot(plotDiv, [trace], layout, config);
+		Plotly.newPlot(plotDiv, [trace], layout, config);
 	}
 
 	onMount(async () => {
@@ -76,13 +85,14 @@
 			webglUnavailable = true;
 			return;
 		}
-		PlotlyModule = await import('plotly.js-gl3d-dist-min');
+		PlotlyModule = await import("plotly.js-gl3d-dist-min");
 		renderChart();
 	});
 
 	onDestroy(() => {
-		if (PlotlyModule && plotDiv) {
-			PlotlyModule.purge(plotDiv);
+		const Plotly = getPlotly();
+		if (Plotly && plotDiv) {
+			Plotly.purge(plotDiv);
 		}
 	});
 
@@ -93,17 +103,18 @@
 		const _xAxis = xAxis;
 		const _yAxis = yAxis;
 
-		if (!PlotlyModule || !plotDiv) return;
+		const Plotly = getPlotly();
+		if (!Plotly || !plotDiv) return;
 
 		const grid = toSurfaceGrid(_results, _xAxis, _yAxis);
 
 		const trace = {
-			type: 'surface' as const,
+			type: "surface",
 			x: grid.x,
 			y: grid.y,
 			z: grid.z,
 			colorscale: COLORSCALE,
-			hovertemplate: '%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>'
+			hovertemplate: "%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>"
 		};
 
 		const layout = {
@@ -111,15 +122,15 @@
 				camera: { eye: { x: 1.5, y: 1.5, z: 1.0 } },
 				xaxis: { title: grid.xLabel },
 				yaxis: { title: grid.yLabel },
-				zaxis: { title: 'Energy (J/token)' }
+				zaxis: { title: "Energy (J/token)" }
 			},
 			margin: { l: 0, r: 0, t: 40, b: 0 },
-			paper_bgcolor: 'transparent'
+			paper_bgcolor: "transparent"
 		};
 
 		const config = { responsive: true, displayModeBar: false };
 
-		PlotlyModule.react(plotDiv, [trace], layout, config);
+		Plotly.react(plotDiv, [trace], layout, config);
 	});
 
 	function handleXAxisChange(e: Event) {
@@ -145,7 +156,7 @@
 		<label class="axis-label">
 			X Axis
 			<select class="axis-select" value={xAxis} onchange={handleXAxisChange}>
-				{#each AXIS_OPTIONS as opt}
+				{#each AXIS_OPTIONS as opt (opt.value)}
 					<option value={opt.value} disabled={opt.value === yAxis}>{opt.label}</option>
 				{/each}
 			</select>
@@ -153,7 +164,7 @@
 		<label class="axis-label">
 			Y Axis
 			<select class="axis-select" value={yAxis} onchange={handleYAxisChange}>
-				{#each AXIS_OPTIONS as opt}
+				{#each AXIS_OPTIONS as opt (opt.value)}
 					<option value={opt.value} disabled={opt.value === xAxis}>{opt.label}</option>
 				{/each}
 			</select>
