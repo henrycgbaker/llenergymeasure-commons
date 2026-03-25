@@ -1,0 +1,158 @@
+<script lang="ts">
+	import PageLayout from '$lib/components/PageLayout.svelte';
+	import DataBanner from '$lib/components/DataBanner.svelte';
+	import ExplorerTabs from '$lib/components/charts/ExplorerTabs.svelte';
+	import ExplorerFilters from '$lib/components/charts/ExplorerFilters.svelte';
+	import ConfigHeatmapInteractive from '$lib/components/charts/ConfigHeatmapInteractive.svelte';
+	import MethodologyLink from '$lib/components/charts/MethodologyLink.svelte';
+	import { applyExplorerFilters } from '$lib/data/transforms/explorerFilters.js';
+	import type { ExplorerFilterState } from '$lib/data/types.js';
+	import type { PageData } from './$types';
+
+	interface Props {
+		data: PageData;
+	}
+
+	const { data }: Props = $props();
+
+	// ── Filter state ────────────────────────────────────────────────────────
+	let filterState = $state<ExplorerFilterState>({
+		backend: null,
+		attn: null,
+		precision: null,
+		batchSize: null,
+		energyRange: null,
+		batchRange: null
+	});
+
+	// ── Tab state ───────────────────────────────────────────────────────────
+	let activeTab = $state('surface');
+
+	// ── Derived filtered data ───────────────────────────────────────────────
+	const filteredResults = $derived(applyExplorerFilters(data.allResults, filterState));
+
+	// ── Handlers ────────────────────────────────────────────────────────────
+	function handleFilterChange(partial: Partial<ExplorerFilterState>) {
+		filterState = { ...filterState, ...partial };
+	}
+
+	function handleTabChange(tab: string) {
+		activeTab = tab;
+	}
+</script>
+
+<DataBanner />
+
+<PageLayout wide>
+	<h1 class="page-title">Configuration Explorer</h1>
+	<p class="page-intro">
+		Explore the full configuration landscape across all backends, attention implementations,
+		precision settings, and batch sizes. Use the filters to narrow down the dataset, then switch
+		between visualisation modes to uncover patterns in energy efficiency.
+	</p>
+
+	<ExplorerFilters {filterState} onFilterChange={handleFilterChange} />
+
+	<div class="toolbar">
+		<span class="filter-count">
+			{filteredResults.length} of {data.allResults.length} configurations
+		</span>
+	</div>
+
+	<ExplorerTabs {activeTab} onTabChange={handleTabChange} />
+
+	<div class="chart-area">
+		{#if activeTab === 'surface'}
+			<div class="placeholder">
+				<p class="placeholder-text">3D Surface - coming soon</p>
+			</div>
+		{:else if activeTab === 'pca'}
+			<div class="placeholder">
+				<p class="placeholder-text">PCA Projection - coming soon</p>
+			</div>
+		{:else if activeTab === 'parallel'}
+			<div class="placeholder">
+				<p class="placeholder-text">Parallel Coordinates - coming soon</p>
+			</div>
+		{:else if activeTab === 'heatmap'}
+			<ConfigHeatmapInteractive allResults={filteredResults} />
+		{/if}
+	</div>
+
+	<footer class="explorer-footer">
+		<MethodologyLink />
+	</footer>
+</PageLayout>
+
+<style>
+	.page-title {
+		font-family: var(--font-heading);
+		font-size: var(--text-4xl);
+		font-weight: var(--weight-bold);
+		color: var(--color-text);
+		margin: 0 0 var(--space-4);
+		line-height: var(--leading-tight);
+	}
+
+	.page-intro {
+		font-size: var(--text-base);
+		color: var(--color-text-muted);
+		line-height: var(--leading-relaxed);
+		max-width: 65ch;
+		margin: 0 0 var(--space-6);
+	}
+
+	.toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: var(--space-4);
+		padding: var(--space-2) 0;
+		margin-bottom: var(--space-2);
+	}
+
+	.filter-count {
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.chart-area {
+		min-height: 500px;
+		width: 100%;
+		padding: var(--space-6) 0;
+	}
+
+	.placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 350px;
+		background: var(--color-bg);
+		border: 1px dashed var(--color-border);
+		border-radius: var(--radius-md);
+	}
+
+	.placeholder-text {
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+		font-style: italic;
+		margin: 0;
+	}
+
+	.explorer-footer {
+		margin-top: var(--space-8);
+		padding-top: var(--space-6);
+		border-top: 1px solid var(--color-border);
+	}
+
+	@media (max-width: 600px) {
+		.chart-area {
+			min-height: 350px;
+		}
+
+		.page-title {
+			font-size: var(--text-2xl);
+		}
+	}
+</style>
