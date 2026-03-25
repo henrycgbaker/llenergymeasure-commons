@@ -40,6 +40,7 @@
 	"type": "module",
 	"dependencies": {
 		"d3": "^7.9.0",
-		"gsap": "^3.14.2"
+		"gsap": "^3.14.2",
+		"plotly.js-gl3d-dist-min": "^3.4.0"
 	}
 }
