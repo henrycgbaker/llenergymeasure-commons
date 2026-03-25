@@ -23,7 +23,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **VIZ-03**: User sees animated power timeseries comparing configurations side-by-side (e.g. fp32 vs fp16)
 - [x] **VIZ-04**: User can trigger and control timeseries animation (play/pause, scrub)
 - [x] **VIZ-05**: User sees a 3D surface visualisation (loss-landscape style) of the configuration space
-- [ ] **VIZ-06**: User can rotate and zoom the 3D surface with mouse/touch
+- [x] **VIZ-06**: User can rotate and zoom the 3D surface with mouse/touch
 - [x] **VIZ-07**: User sees a PCA-reduced 3D projection of all configuration dimensions
 - [x] **VIZ-08**: User sees a parallel coordinates plot showing high-dimensional relationships
 - [x] **VIZ-09**: User can brush-select ranges on parallel coordinates axes to filter data
@@ -99,7 +99,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIZ-03 | Phase 2 | Complete |
 | VIZ-04 | Phase 2 | Complete |
 | VIZ-05 | Phase 3 | Complete |
-| VIZ-06 | Phase 3 | Pending |
+| VIZ-06 | Phase 3 | Complete |
 | VIZ-07 | Phase 3 | Complete |
 | VIZ-08 | Phase 3 | Complete |
 | VIZ-09 | Phase 3 | Complete |

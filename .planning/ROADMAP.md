@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Data contract, fixture data, narrative arc, design system, infrastructure (completed 2026-03-20)
 - [ ] **Phase 2: Scroll Narrative** - Five-beat scroll story with primary visualisations (heatmap + timeseries)
-- [ ] **Phase 3: Explorer + Advanced Visualisations** - Interactive explorer, 3D surface, PCA projection, parallel coordinates
+- [x] **Phase 3: Explorer + Advanced Visualisations** - Interactive explorer, 3D surface, PCA projection, parallel coordinates (completed 2026-03-25)
 - [ ] **Phase 4: Distribution + Polish** - Embeds, citations, data downloads, accessibility and performance audit
 
 ## Phase Details
@@ -90,7 +90,7 @@ download what they need.
      any axis to filter the data, and the filtered state is reflected across all charts.
   4. A user can download the data underlying any individual chart as CSV or JSON, and
      can download the complete fixture dataset as a single file.
-**Plans:** 1/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 03-01-PLAN.md -- Data transforms, types, PCA build script, download utilities (TDD)
@@ -123,5 +123,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-03-20 |
 | 2. Scroll Narrative | 4/5 | In Progress|  |
-| 3. Explorer + Advanced Visualisations | 1/4 | In Progress|  |
+| 3. Explorer + Advanced Visualisations | 4/4 | Complete   | 2026-03-25 |
 | 4. Distribution + Polish | 0/TBD | Not started | - |

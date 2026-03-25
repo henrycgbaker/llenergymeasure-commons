@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md (explorer data transforms)
-last_updated: "2026-03-25T23:34:20.782Z"
+stopped_at: Completed 03-03-PLAN.md (3D Surface and PCA Projection charts)
+last_updated: "2026-03-25T23:52:54.939Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 8
+  completed_plans: 11
   percent: 20
 ---
 
@@ -57,6 +57,8 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 02-scroll-narrative P04 | 7 | 2 tasks | 4 files |
 | Phase 02-scroll-narrative P05 | 12 | 1 tasks | 11 files |
 | Phase 03-explorer-advanced-visualisations P01 | 4 | 2 tasks | 11 files |
+| Phase 03-explorer-advanced-visualisations P02 | 5 | 2 tasks | 5 files |
+| Phase 03-explorer-advanced-visualisations P03 | 9 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -89,6 +91,13 @@ Recent decisions affecting current work:
 - [Phase 03-explorer-advanced-visualisations]: ml-pca in platform/ resolved via createRequire from root scripts/
 - [Phase 03-explorer-advanced-visualisations]: PCA feature matrix: log2(batch_size) + ordinal encodings; 3 components explain 66.7% variance
 - [Phase 03-explorer-advanced-visualisations]: Surface grid fills missing cells with global mean of non-missing cells (neutral interpolation)
+- [Phase 03-explorer-advanced-visualisations]: Full dataset footer download uses inline handlers (not DownloadButton) for distinct styling
+- [Phase 03-explorer-advanced-visualisations]: Explorer tab scaffold: page holds filter $state, passes filteredResults as allResults to chart components
+- [Phase 03-explorer-advanced-visualisations]: SvelteMap instead of native Map for per-axis D3 scale storage (svelte/prefer-svelte-reactivity rule)
+- [Phase 03-explorer-advanced-visualisations]: D3 brush/drag set up in onMount not effect: prevents infinite filter-redraw loop (Research pitfall 4)
+- [Phase 03-explorer-advanced-visualisations]: plotDiv declared as $state<HTMLDivElement | undefined> in Svelte 5 for reactive bind:this bindings
+- [Phase 03-explorer-advanced-visualisations]: Plotly typed as unknown with getPlotly() cast helper — no @types package, avoid eslint any in Svelte files
+- [Phase 03-explorer-advanced-visualisations]: Tab switching uses {#if} not display:none so Plotly.purge fires on destroy — prevents WebGL context exhaustion
 
 ### Pending Todos
 
@@ -104,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T23:34:20.777Z
-Stopped at: Completed 03-01-PLAN.md (explorer data transforms)
+Last session: 2026-03-25T23:52:54.936Z
+Stopped at: Completed 03-03-PLAN.md (3D Surface and PCA Projection charts)
 Resume file: None
