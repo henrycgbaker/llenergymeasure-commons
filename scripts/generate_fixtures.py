@@ -89,13 +89,17 @@ ATTENTION_FACTOR = {
 random.seed(42)
 
 
-def deterministic_config_hash(precision: str, batch_size: int, backend: str, attention: str) -> str:
+def deterministic_config_hash(
+    precision: str, batch_size: int, backend: str, attention: str
+) -> str:
     """Deterministic SHA-256[:16] from config combination."""
     key = f"{precision}:{batch_size}:{backend}:{attention}"
     return hashlib.sha256(key.encode()).hexdigest()[:16]
 
 
-def make_experiment(precision: str, batch_size: int, backend: str, attention: str) -> dict:
+def make_experiment(
+    precision: str, batch_size: int, backend: str, attention: str
+) -> dict:
     """Build a single ExperimentResult-shaped dict, validate against schema, return as dict."""
     # Compute energy with small random jitter (+/- 5%)
     jitter = 1.0 + random.uniform(-0.05, 0.05)
@@ -122,8 +126,10 @@ def make_experiment(precision: str, batch_size: int, backend: str, attention: st
     # Base throughput at batch=1 pytorch fp16: ~50 tok/s; scales with batch
     base_throughput = 50.0  # tokens/sec at batch=1, fp16, pytorch
     throughput_jitter = 1.0 + random.uniform(-0.03, 0.03)
-    throughput_scale = (batch_size ** 0.6) * (1.0 / PRECISION_FACTOR[precision]) * (
-        1.0 / BACKEND_FACTOR[backend]
+    throughput_scale = (
+        (batch_size**0.6)
+        * (1.0 / PRECISION_FACTOR[precision])
+        * (1.0 / BACKEND_FACTOR[backend])
     )
     avg_tokens_per_second = base_throughput * throughput_scale * throughput_jitter
 
@@ -149,7 +155,9 @@ def make_experiment(precision: str, batch_size: int, backend: str, attention: st
     data = {
         "schema_version": "2.0",
         "experiment_id": str(uuid.uuid4()),
-        "measurement_config_hash": deterministic_config_hash(precision, batch_size, backend, attention),
+        "measurement_config_hash": deterministic_config_hash(
+            precision, batch_size, backend, attention
+        ),
         "backend": backend,
         "backend_version": None,
         "measurement_methodology": "total",
@@ -199,7 +207,9 @@ def main() -> None:
         for batch_size in BATCH_SIZES:
             for backend in BACKENDS:
                 for attention in ATTENTIONS:
-                    records.append(make_experiment(precision, batch_size, backend, attention))
+                    records.append(
+                        make_experiment(precision, batch_size, backend, attention)
+                    )
 
     # Verify ratio
     energies = [r["avg_energy_per_token_j"] for r in records]
@@ -224,19 +234,23 @@ def main() -> None:
     print("Directional checks:")
     for prec in PRECISIONS:
         avg = sum(
-            r["avg_energy_per_token_j"] for r in records if r["effective_config"]["load_in_8bit"] == (prec == "int8") and
-            (r["effective_config"]["precision"] == prec or prec == "int8")
+            r["avg_energy_per_token_j"]
+            for r in records
+            if r["effective_config"]["load_in_8bit"] == (prec == "int8")
+            and (r["effective_config"]["precision"] == prec or prec == "int8")
         ) / (len(BATCH_SIZES) * len(BACKENDS) * len(ATTENTIONS))
         print(f"  precision={prec:4s}: avg {avg:.5f} J/token")
     for b in BATCH_SIZES:
-        avg = sum(r["avg_energy_per_token_j"] for r in records if r["effective_config"]["batch_size"] == b) / (
-            len(PRECISIONS) * len(BACKENDS) * len(ATTENTIONS)
-        )
+        avg = sum(
+            r["avg_energy_per_token_j"]
+            for r in records
+            if r["effective_config"]["batch_size"] == b
+        ) / (len(PRECISIONS) * len(BACKENDS) * len(ATTENTIONS))
         print(f"  batch={b:3d}:       avg {avg:.5f} J/token")
     for bk in BACKENDS:
-        avg = sum(r["avg_energy_per_token_j"] for r in records if r["backend"] == bk) / (
-            len(PRECISIONS) * len(BATCH_SIZES) * len(ATTENTIONS)
-        )
+        avg = sum(
+            r["avg_energy_per_token_j"] for r in records if r["backend"] == bk
+        ) / (len(PRECISIONS) * len(BATCH_SIZES) * len(ATTENTIONS))
         print(f"  backend={bk:9s}: avg {avg:.5f} J/token")
 
 

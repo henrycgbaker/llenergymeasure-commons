@@ -1,10 +1,11 @@
+import { base } from '$app/paths';
 import type { PageLoad } from './$types';
 import type { ExperimentResult } from '$lib/data/types.js';
 import { toHeatmapData } from '$lib/data/transforms/heatmapData.js';
 import { smartphoneCharges } from '$lib/data/transforms/equivalences.js';
 
 export const load: PageLoad = async ({ fetch }) => {
-	const response = await fetch('/data/fixture-results.json');
+	const response = await fetch(`${base}/data/fixture-results.json`);
 	const allResults: ExperimentResult[] = await response.json();
 
 	// Default heatmap filter: pytorch + sdpa (Beat 2 spec)
