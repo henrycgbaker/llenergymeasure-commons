@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import * as d3 from 'd3';
 	import type { ParallelRecord } from '$lib/data/types.js';
 
@@ -99,7 +100,7 @@
 	}
 
 	// D3 infrastructure — set up once in onMount
-	let brushSelections = new Map<AxisKey, [number, number] | null>();
+	let brushSelections = new SvelteMap<AxisKey, [number, number] | null>();
 
 	onMount(() => {
 		if (!svgEl || !containerEl) return;
@@ -154,7 +155,7 @@
 			.padding(0);
 
 		// Build per-axis scales
-		const scales = new Map<AxisKey, d3.ScaleLinear<number, number> | d3.ScalePoint<string>>();
+		const scales = new SvelteMap<AxisKey, d3.ScaleLinear<number, number> | d3.ScalePoint<string>>();
 		for (const key of axisOrder) {
 			scales.set(key, buildScale(key, data, innerHeight));
 		}
@@ -301,7 +302,7 @@
 			let dragStartOrder: AxisKey[] = [];
 
 			const drag = d3.drag<SVGTextElement, AxisKey>()
-				.on('start', function (event) {
+				.on('start', function (_event) {
 					dragStartX = xScale(key as string) ?? 0;
 					dragStartOrder = [...axisOrder];
 					d3.select(this).attr('cursor', 'grabbing');
