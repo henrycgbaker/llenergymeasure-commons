@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { base } from '$app/paths';
+
 	interface Props {
 		class?: string;
 	}
@@ -6,7 +8,7 @@
 	const { class: className = '' }: Props = $props();
 </script>
 
-<a href="/methodology" class="methodology-link {className}">
+<a href="{base}/methodology" class="methodology-link {className}">
 	<svg
 		class="methodology-icon"
 		xmlns="http://www.w3.org/2000/svg"

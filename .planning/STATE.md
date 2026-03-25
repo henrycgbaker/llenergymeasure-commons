@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-scroll-narrative/02-04-PLAN.md
-last_updated: "2026-03-20T20:15:21.544Z"
+stopped_at: "02-05 checkpoint:human-verify — awaiting user scroll test approval"
+last_updated: "2026-03-20T20:23:21.428Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 20
 ---
 
@@ -55,6 +55,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 02-scroll-narrative P02 | 9 | 2 tasks | 9 files |
 | Phase 02-scroll-narrative P03 | 7min | 2 tasks | 6 files |
 | Phase 02-scroll-narrative P04 | 7 | 2 tasks | 4 files |
+| Phase 02-scroll-narrative P05 | 12 | 1 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -63,7 +64,7 @@ Progress: [██░░░░░░░░] ~20%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Stack: SvelteKit + adapter-static + D3 + Plotly + GSAP + DuckDB-WASM; deploy to Cloudflare Pages
+- Stack: SvelteKit + adapter-static + D3 + Plotly + GSAP + DuckDB-WASM; deploy to GitHub Pages
 - Data: Fixture data designed as editorial content - agree 5 headline numbers before writing records
 - Architecture: Build-time data transforms only; chart components receive pre-shaped typed props
 - Fixture energy factors: RESEARCH.md skeleton factors produce 19x ratio; recalibrated to hit 8x target
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 02-scroll-narrative]: Both power curves normalised to 60 s time axis for fair visual comparison regardless of real inference duration
 - [Phase 02-scroll-narrative]: Beat 3 two-section approach: short NarrativeSection intro + separate unpinned section avoids sticky toggle jitter
 - [Phase 02-scroll-narrative]: SvelteSet imported from svelte/reactivity (not svelte) for reactive deduplication
+- [Phase 02-scroll-narrative]: Beat 4 equivalences use avg_energy_per_token_j (static per config, not scroll-driven) — consistent with heatmap tooltip pattern
+- [Phase 02-scroll-narrative]: Dark-to-light transition uses a gradient div with negative margin-top to overlap Beat 1 boundary
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T20:15:21.540Z
-Stopped at: Completed 02-scroll-narrative/02-04-PLAN.md
+Last session: 2026-03-20T20:23:12.507Z
+Stopped at: 02-05 checkpoint:human-verify — awaiting user scroll test approval
 Resume file: None

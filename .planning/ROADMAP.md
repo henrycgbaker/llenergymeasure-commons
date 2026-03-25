@@ -37,8 +37,8 @@ first-class deliverables before any visualisation component is built.
      measured, how, and what the limitations are, and discloses the fixture-data status.
   3. An "About the data" coverage statement is visible on the site, accurately describing
      what hardware, models, and configuration dimensions the fixture data covers.
-  4. The SvelteKit project builds to a static bundle and deploys successfully to Cloudflare
-     Pages from a GitHub push.
+  4. The SvelteKit project builds to a static bundle and deploys successfully to GitHub
+     Pages from a push to main.
   5. The five-beat narrative arc and policy action layer copy exist as reviewed documents
      in the repository before any scroll component is built.
 **Plans:** 2/2 plans complete
