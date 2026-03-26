@@ -50,9 +50,7 @@ export function toSurfaceGrid(
 
 	// Accumulate sums and counts for averaging
 	const sums: number[][] = Array.from({ length: y.length }, () => new Array(x.length).fill(0));
-	const counts: number[][] = Array.from({ length: y.length }, () =>
-		new Array(x.length).fill(0)
-	);
+	const counts: number[][] = Array.from({ length: y.length }, () => new Array(x.length).fill(0));
 
 	for (const r of results) {
 		const xi = xIndex.get(getAxisValue(r, xAxis));

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount, onDestroy } from "svelte";
-	import ConfigHeatmapInteractive from "./ConfigHeatmapInteractive.svelte";
-	import { toSurfaceGrid } from "$lib/data/transforms/surfaceData.js";
-	import type { ExperimentResult } from "$lib/data/types.js";
+	import { onMount, onDestroy } from 'svelte';
+	import ConfigHeatmapInteractive from './ConfigHeatmapInteractive.svelte';
+	import { toSurfaceGrid } from '$lib/data/transforms/surfaceData.js';
+	import type { ExperimentResult } from '$lib/data/types.js';
 
 	interface Props {
 		results: ExperimentResult[];
@@ -10,21 +10,24 @@
 		yAxis?: string;
 	}
 
-	let { results, xAxis = $bindable("precision"), yAxis = $bindable("batch_size") }: Props =
-		$props();
+	let {
+		results,
+		xAxis = $bindable('precision'),
+		yAxis = $bindable('batch_size')
+	}: Props = $props();
 
 	const AXIS_OPTIONS = [
-		{ value: "precision", label: "Precision" },
-		{ value: "batch_size", label: "Batch Size" },
-		{ value: "backend", label: "Backend" },
-		{ value: "attn_implementation", label: "Attention" }
+		{ value: 'precision', label: 'Precision' },
+		{ value: 'batch_size', label: 'Batch Size' },
+		{ value: 'backend', label: 'Backend' },
+		{ value: 'attn_implementation', label: 'Attention' }
 	];
 
 	// RdBu colour scale matching design tokens
 	const COLORSCALE: [number, string][] = [
-		[0, "#2166ac"],
-		[0.5, "#f7f7f7"],
-		[1, "#d6604d"]
+		[0, '#2166ac'],
+		[0.5, '#f7f7f7'],
+		[1, '#d6604d']
 	];
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
@@ -34,8 +37,8 @@
 
 	function isWebGLAvailable(): boolean {
 		try {
-			const canvas = document.createElement("canvas");
-			return !!(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
+			const canvas = document.createElement('canvas');
+			return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
 		} catch {
 			return false;
 		}
@@ -56,12 +59,12 @@
 		const grid = toSurfaceGrid(results, xAxis, yAxis);
 
 		const trace = {
-			type: "surface",
+			type: 'surface',
 			x: grid.x,
 			y: grid.y,
 			z: grid.z,
 			colorscale: COLORSCALE,
-			hovertemplate: "%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>"
+			hovertemplate: '%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>'
 		};
 
 		const layout = {
@@ -69,10 +72,10 @@
 				camera: { eye: { x: 1.5, y: 1.5, z: 1.0 } },
 				xaxis: { title: grid.xLabel },
 				yaxis: { title: grid.yLabel },
-				zaxis: { title: "Energy (J/token)" }
+				zaxis: { title: 'Energy (J/token)' }
 			},
 			margin: { l: 0, r: 0, t: 40, b: 0 },
-			paper_bgcolor: "transparent"
+			paper_bgcolor: 'transparent'
 		};
 
 		const config = { responsive: true, displayModeBar: false };
@@ -85,7 +88,7 @@
 			webglUnavailable = true;
 			return;
 		}
-		PlotlyModule = await import("plotly.js-gl3d-dist-min");
+		PlotlyModule = await import('plotly.js-gl3d-dist-min');
 		renderChart();
 	});
 
@@ -109,12 +112,12 @@
 		const grid = toSurfaceGrid(_results, _xAxis, _yAxis);
 
 		const trace = {
-			type: "surface",
+			type: 'surface',
 			x: grid.x,
 			y: grid.y,
 			z: grid.z,
 			colorscale: COLORSCALE,
-			hovertemplate: "%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>"
+			hovertemplate: '%{x} x %{y}<br>Energy: %{z:.4f} J/tok<extra></extra>'
 		};
 
 		const layout = {
@@ -122,10 +125,10 @@
 				camera: { eye: { x: 1.5, y: 1.5, z: 1.0 } },
 				xaxis: { title: grid.xLabel },
 				yaxis: { title: grid.yLabel },
-				zaxis: { title: "Energy (J/token)" }
+				zaxis: { title: 'Energy (J/token)' }
 			},
 			margin: { l: 0, r: 0, t: 40, b: 0 },
-			paper_bgcolor: "transparent"
+			paper_bgcolor: 'transparent'
 		};
 
 		const config = { responsive: true, displayModeBar: false };

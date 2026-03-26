@@ -132,7 +132,10 @@
 		svg.selectAll('*').remove();
 		svgInitialised = false;
 
-		const g = svg.append('g').attr('class', 'main-g').attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+		const g = svg
+			.append('g')
+			.attr('class', 'main-g')
+			.attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
 
 		g.append('g').attr('class', 'lines-g');
 		g.append('g').attr('class', 'axes-g');
@@ -149,7 +152,8 @@
 		const g = svg.select<SVGGElement>('.main-g');
 
 		// Build x scale from current axis order
-		const xScale = d3.scalePoint<string>()
+		const xScale = d3
+			.scalePoint<string>()
 			.domain(axisOrder as string[])
 			.range([0, innerWidth])
 			.padding(0);
@@ -164,7 +168,9 @@
 
 		// ── Lines ────────────────────────────────────────────────────────────
 		const linesG = g.select<SVGGElement>('.lines-g');
-		const paths = linesG.selectAll<SVGPathElement, ParallelRecord>('path.pc-line').data(data, (d) => d.experiment_id);
+		const paths = linesG
+			.selectAll<SVGPathElement, ParallelRecord>('path.pc-line')
+			.data(data, (d) => d.experiment_id);
 
 		paths.join(
 			(enter) =>
@@ -178,13 +184,11 @@
 					.attr('d', (d) => buildPath(d, axisOrder, xScale, scales))
 					.on('mouseover', function (event: MouseEvent, d: ParallelRecord) {
 						// Dim all, highlight this
-						linesG.selectAll<SVGPathElement, ParallelRecord>('path.pc-line')
+						linesG
+							.selectAll<SVGPathElement, ParallelRecord>('path.pc-line')
 							.attr('stroke-opacity', 0.1)
 							.attr('stroke-width', 1.5);
-						d3.select(this)
-							.attr('stroke-opacity', 1.0)
-							.attr('stroke-width', 2.5)
-							.raise();
+						d3.select(this).attr('stroke-opacity', 1.0).attr('stroke-width', 2.5).raise();
 
 						// Tooltip
 						tooltipRecord = d;
@@ -195,7 +199,8 @@
 						updateTooltipPosition(event);
 					})
 					.on('mouseout', function () {
-						linesG.selectAll<SVGPathElement, ParallelRecord>('path.pc-line')
+						linesG
+							.selectAll<SVGPathElement, ParallelRecord>('path.pc-line')
 							.attr('stroke-opacity', 0.4)
 							.attr('stroke-width', 1.5);
 						tooltipVisible = false;
@@ -220,7 +225,9 @@
 			.attr('class', (d) => `axis-group axis-${d}`)
 			.attr('transform', (d) => `translate(${xScale(d as string) ?? 0},0)`);
 
-		const allAxisGroups = axisGroupsEnter.merge(axisGroups as d3.Selection<SVGGElement, AxisKey, SVGGElement, unknown>);
+		const allAxisGroups = axisGroupsEnter.merge(
+			axisGroups as d3.Selection<SVGGElement, AxisKey, SVGGElement, unknown>
+		);
 
 		// Update transform on existing groups (for drag-reorder)
 		allAxisGroups.attr('transform', (d) => `translate(${xScale(d as string) ?? 0},0)`);
@@ -250,8 +257,10 @@
 				ticks.forEach((t) => {
 					const y = linScale(t);
 					ag.append('line')
-						.attr('x1', -4).attr('x2', 4)
-						.attr('y1', y).attr('y2', y)
+						.attr('x1', -4)
+						.attr('x2', 4)
+						.attr('y1', y)
+						.attr('y2', y)
 						.attr('stroke', 'var(--color-text-muted)')
 						.attr('stroke-width', 1);
 
@@ -269,8 +278,10 @@
 				ptScale.domain().forEach((val) => {
 					const y = ptScale(val) ?? 0;
 					ag.append('line')
-						.attr('x1', -4).attr('x2', 4)
-						.attr('y1', y).attr('y2', y)
+						.attr('x1', -4)
+						.attr('x2', 4)
+						.attr('y1', y)
+						.attr('y2', y)
 						.attr('stroke', 'var(--color-text-muted)')
 						.attr('stroke-width', 1);
 
@@ -286,7 +297,8 @@
 			}
 
 			// Axis label (draggable target)
-			const label = ag.append('text')
+			const label = ag
+				.append('text')
 				.attr('class', 'axis-label')
 				.attr('y', -14)
 				.attr('text-anchor', 'middle')
@@ -301,7 +313,8 @@
 			let dragStartX = 0;
 			let dragStartOrder: AxisKey[] = [];
 
-			const drag = d3.drag<SVGTextElement, AxisKey>()
+			const drag = d3
+				.drag<SVGTextElement, AxisKey>()
 				.on('start', function (_event) {
 					dragStartX = xScale(key as string) ?? 0;
 					dragStartOrder = [...axisOrder];
@@ -322,10 +335,10 @@
 					for (let i = 0; i < newOrder.length; i++) {
 						if (i === draggedIdx) continue;
 						const otherX = xScale(newOrder[i] as string) ?? 0;
-						if (i < draggedIdx && targetX < otherX + (xScale.step() / 2)) {
+						if (i < draggedIdx && targetX < otherX + xScale.step() / 2) {
 							insertIdx = i;
 							break;
-						} else if (i > draggedIdx && targetX > otherX - (xScale.step() / 2)) {
+						} else if (i > draggedIdx && targetX > otherX - xScale.step() / 2) {
 							insertIdx = i;
 						}
 					}
@@ -368,8 +381,12 @@
 			if (key === 'batch_size' || key === 'avg_energy_per_token_j') {
 				const linScale = scale as d3.ScaleLinear<number, number>;
 
-				const brush = d3.brushY()
-					.extent([[-8, 0], [8, innerHeight]])
+				const brush = d3
+					.brushY()
+					.extent([
+						[-8, 0],
+						[8, innerHeight]
+					])
 					.on('brush end', function (event) {
 						if (!event.selection) {
 							// Brush cleared
@@ -389,10 +406,18 @@
 						});
 					});
 
-				(ag.append('g').attr('class', 'brush') as unknown as d3.Selection<SVGGElement, unknown, null, undefined>).call(brush);
+				(
+					ag.append('g').attr('class', 'brush') as unknown as d3.Selection<
+						SVGGElement,
+						unknown,
+						null,
+						undefined
+					>
+				).call(brush);
 
 				// Style brush selection rect
-				ag.select<SVGGElement>('.brush').select('.selection')
+				ag.select<SVGGElement>('.brush')
+					.select('.selection')
 					.attr('fill', 'var(--color-primary)')
 					.attr('fill-opacity', 0.1)
 					.attr('stroke', 'var(--color-primary)')
@@ -451,11 +476,7 @@
 	></svg>
 
 	{#if tooltipVisible && tooltipRecord}
-		<div
-			class="pc-tooltip"
-			style="left: {tooltipX}px; top: {tooltipY}px;"
-			aria-live="polite"
-		>
+		<div class="pc-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;" aria-live="polite">
 			<div class="pc-tooltip__row pc-tooltip__row--header">
 				<span class="pc-tooltip__label">Backend</span>
 				<span class="pc-tooltip__value">{tooltipRecord.backend}</span>

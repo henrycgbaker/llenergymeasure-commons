@@ -489,8 +489,8 @@
 
 			<div class="beat-5__cta">
 				<p class="beat-5__cta-text">
-					See all {data.allResults.length} configurations in the full dataset — filter by backend,
-					precision, and batch size to find the optimal trade-off for your deployment context.
+					See all {data.allResults.length} configurations in the full dataset — filter by backend, precision,
+					and batch size to find the optimal trade-off for your deployment context.
 				</p>
 				<a href="{base}/explorer" class="beat-5__cta-link">Explore the data &rarr;</a>
 			</div>

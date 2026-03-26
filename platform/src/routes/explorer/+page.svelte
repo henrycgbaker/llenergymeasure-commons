@@ -75,10 +75,7 @@
 	<ExplorerFilters {filterState} onFilterChange={handleFilterChange} />
 
 	<div class="toolbar">
-		<DownloadButton
-			results={filteredResults}
-			totalCount={data.allResults.length}
-		/>
+		<DownloadButton results={filteredResults} totalCount={data.allResults.length} />
 		<span class="filter-count">
 			{filteredResults.length} of {data.allResults.length} configurations
 		</span>
@@ -95,10 +92,7 @@
 				filteredExperimentIds={filteredResults.map((r) => r.experiment_id)}
 			/>
 		{:else if activeTab === 'parallel'}
-			<ParallelCoordinates
-				data={toParallelData(filteredResults)}
-				onBrush={handleParallelBrush}
-			/>
+			<ParallelCoordinates data={toParallelData(filteredResults)} onBrush={handleParallelBrush} />
 		{:else if activeTab === 'heatmap'}
 			<ConfigHeatmapInteractive allResults={filteredResults} />
 		{/if}
@@ -112,9 +106,7 @@
 				configuration details.
 			</p>
 			<div class="full-download__actions">
-				<button class="full-dl-btn" onclick={downloadFullCSV} type="button">
-					Download CSV
-				</button>
+				<button class="full-dl-btn" onclick={downloadFullCSV} type="button"> Download CSV </button>
 				<button class="full-dl-btn" onclick={downloadFullJSON} type="button">
 					Download JSON
 				</button>
