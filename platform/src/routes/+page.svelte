@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { base } from '$app/paths';
 	import ScrollNarrative from '$lib/components/scroll/ScrollNarrative.svelte';
 	import NarrativeSection from '$lib/components/scroll/NarrativeSection.svelte';
 	import ConfigHeatmap from '$lib/components/charts/ConfigHeatmap.svelte';
@@ -484,6 +485,14 @@
 						terms.
 					</p>
 				</ExpandableDetail>
+			</div>
+
+			<div class="beat-5__cta">
+				<p class="beat-5__cta-text">
+					See all {data.allResults.length} configurations in the full dataset — filter by backend, precision,
+					and batch size to find the optimal trade-off for your deployment context.
+				</p>
+				<a href="{base}/explorer" class="beat-5__cta-link">Explore the data &rarr;</a>
 			</div>
 
 			<div class="beat-5__footer">
@@ -1041,6 +1050,43 @@
 		line-height: var(--leading-relaxed);
 		color: var(--color-text);
 		margin: 0;
+	}
+
+	.beat-5__cta {
+		margin: var(--space-8) 0 var(--space-6);
+		padding: var(--space-6);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md, 6px);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-4);
+	}
+
+	.beat-5__cta-text {
+		font-size: var(--text-base);
+		color: var(--color-text-muted);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+		max-width: 60ch;
+	}
+
+	.beat-5__cta-link {
+		display: inline-block;
+		padding: var(--space-3) var(--space-6);
+		background: var(--color-primary);
+		color: #ffffff;
+		font-family: var(--font-body);
+		font-size: var(--text-base);
+		font-weight: var(--weight-bold, 700);
+		text-decoration: none;
+		border-radius: var(--radius-md, 6px);
+		transition: background-color var(--transition-fast, 150ms ease);
+	}
+
+	.beat-5__cta-link:hover {
+		background: var(--color-primary-light);
 	}
 
 	.beat-5__footer {

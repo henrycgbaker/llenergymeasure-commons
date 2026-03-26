@@ -64,3 +64,47 @@ export interface PowerPoint {
 	t: number;
 	w: number;
 }
+
+export interface SurfaceGrid {
+	x: string[];
+	y: string[];
+	z: number[][];
+	xLabel: string;
+	yLabel: string;
+}
+
+export interface ParallelRecord {
+	experiment_id: string;
+	precision: string;
+	batch_size: number;
+	backend: string;
+	attn_implementation: string;
+	avg_energy_per_token_j: number;
+}
+
+export interface ExplorerFilterState {
+	backend: string | null;
+	attn: string | null;
+	precision: string | null;
+	batchSize: number | null;
+	energyRange: [number, number] | null;
+	batchRange: [number, number] | null;
+}
+
+export interface PCAPoint {
+	experiment_id: string;
+	pc1: number;
+	pc2: number;
+	pc3: number;
+	energy: number;
+	throughput: number;
+	backend: string;
+	precision: string;
+	batch_size: number;
+	attn: string;
+}
+
+export interface PCAProjection {
+	explained_variance: number[];
+	points: PCAPoint[];
+}

@@ -75,3 +75,21 @@ jobs:
         run: |
           test -f build/index.html
           test -f build/methodology/index.html
+
+  ci:
+    if: always()
+    needs: [filter, lint, type-check, build]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.filter.result }}" == "failure" || \
+                "${{ needs.lint.result }}" == "failure" || \
+                "${{ needs.type-check.result }}" == "failure" || \
+                "${{ needs.build.result }}" == "failure" ]]; then
+            echo "One or more jobs failed"
+            exit 1
+          fi
