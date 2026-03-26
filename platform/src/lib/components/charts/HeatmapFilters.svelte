@@ -1,72 +1,101 @@
 <script lang="ts">
+	import type { DimensionValue, ExperimentResult } from '$lib/data/types.js';
+	import {
+		getAvailableDimensions,
+		getDimensionLabel,
+		getDimensionValues,
+		formatDimensionValue,
+		sortDimensionValues
+	} from '$lib/data/dimensions.js';
+
 	interface Props {
+		allResults: ExperimentResult[];
 		selectedBackend: string;
-		selectedAttn: string;
+		dimensionFilters: Record<string, DimensionValue>;
 		selectedMetric: string;
 		onBackendChange: (_v: string) => void;
-		onAttnChange: (_v: string) => void;
+		onDimensionFilterChange: (_key: string, _v: DimensionValue) => void;
 		onMetricChange: (_v: string) => void;
 	}
 
 	const {
+		allResults,
 		selectedBackend,
-		selectedAttn,
+		dimensionFilters,
 		selectedMetric,
 		onBackendChange,
-		onAttnChange,
+		onDimensionFilterChange,
 		onMetricChange
 	}: Props = $props();
 
-	const backends = [
-		{ value: 'pytorch', label: 'PyTorch' },
-		{ value: 'vllm', label: 'vLLM' },
-		{ value: 'tensorrt', label: 'TensorRT' }
-	];
+	const backends = $derived(
+		sortDimensionValues(getDimensionValues(allResults, 'backend')) as string[]
+	);
 
-	const attentions = [
-		{ value: 'eager', label: 'eager' },
-		{ value: 'sdpa', label: 'SDPA' },
-		{ value: 'flash_attention_2', label: 'Flash v2' }
-	];
+	const backendLabels: Record<string, string> = {
+		pytorch: 'PyTorch',
+		vllm: 'vLLM',
+		tensorrt: 'TensorRT'
+	};
+
+	// Dimensions available for the selected backend (excluding backend itself)
+	const filterableDims = $derived(
+		getAvailableDimensions(allResults, selectedBackend).filter(
+			(k) => k !== 'backend'
+		)
+	);
 
 	const metrics = [
 		{ value: 'energy', label: 'Energy per token' },
 		{ value: 'throughput', label: 'Throughput' }
 	];
+
+	function getOptions(dim: string) {
+		const subset = allResults.filter((r) => r.backend === selectedBackend);
+		const rawValues = getDimensionValues(subset, dim);
+		return sortDimensionValues(rawValues);
+	}
 </script>
 
 <div class="filters" role="group" aria-label="Heatmap filters">
 	<div class="filter-group">
 		<span class="filter-group__label" id="backend-label">Backend</span>
 		<div class="segment-group" role="radiogroup" aria-labelledby="backend-label">
-			{#each backends as { value, label } (value)}
+			{#each backends as value (value)}
 				<button
 					class="segment-btn"
 					class:segment-btn--active={selectedBackend === value}
 					role="radio"
 					aria-checked={selectedBackend === value}
 					onclick={() => onBackendChange(value)}
-					type="button">{label}</button
+					type="button">{backendLabels[value] ?? value}</button
 				>
 			{/each}
 		</div>
 	</div>
 
-	<div class="filter-group">
-		<span class="filter-group__label" id="attn-label">Attention</span>
-		<div class="segment-group" role="radiogroup" aria-labelledby="attn-label">
-			{#each attentions as { value, label } (value)}
-				<button
-					class="segment-btn"
-					class:segment-btn--active={selectedAttn === value}
-					role="radio"
-					aria-checked={selectedAttn === value}
-					onclick={() => onAttnChange(value)}
-					type="button">{label}</button
-				>
-			{/each}
-		</div>
-	</div>
+	{#each filterableDims as dim (dim)}
+		{@const options = getOptions(dim)}
+		{@const labelId = `heatmap-${dim}-label`}
+		{@const currentValue = dimensionFilters[dim]}
+		{#if options.length > 1}
+			<div class="filter-group">
+				<span class="filter-group__label" id={labelId}>{getDimensionLabel(dim)}</span>
+				<div class="segment-group" role="radiogroup" aria-labelledby={labelId}>
+					{#each options as opt (String(opt))}
+						<button
+							class="segment-btn"
+							class:segment-btn--active={currentValue === opt}
+							role="radio"
+							aria-checked={currentValue === opt}
+							onclick={() => onDimensionFilterChange(dim, opt)}
+							type="button">{formatDimensionValue(dim, opt)}</button
+						>
+					{/each}
+				</div>
+			</div>
+		{/if}
+	{/each}
 
 	<div class="filter-group">
 		<span class="filter-group__label" id="metric-label">Metric</span>
@@ -113,7 +142,6 @@
 		gap: var(--space-1);
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
-		/* Hide scrollbar but keep scroll functionality */
 		scrollbar-width: none;
 	}
 

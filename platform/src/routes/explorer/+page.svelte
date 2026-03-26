@@ -12,7 +12,7 @@
 	import { applyExplorerFilters } from '$lib/data/transforms/explorerFilters.js';
 	import { toParallelData } from '$lib/data/transforms/parallelCoordsData.js';
 	import { toCSV, toJSON, triggerDownload } from '$lib/data/transforms/downloadUtils.js';
-	import type { ExplorerFilterState } from '$lib/data/types.js';
+	import type { DimensionValue, ExplorerFilterState } from '$lib/data/types.js';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -23,12 +23,8 @@
 
 	// ── Filter state ────────────────────────────────────────────────────────
 	let filterState = $state<ExplorerFilterState>({
-		backend: null,
-		attn: null,
-		precision: null,
-		batchSize: null,
-		energyRange: null,
-		batchRange: null
+		dimensionFilters: {},
+		energyRange: null
 	});
 
 	// ── Tab state ───────────────────────────────────────────────────────────
@@ -37,16 +33,26 @@
 	// ── Derived filtered data ───────────────────────────────────────────────
 	const filteredResults = $derived(applyExplorerFilters(data.allResults, filterState));
 
+	// Selected backend for PCA
+	const selectedBackend = $derived(
+		filterState.dimensionFilters.backend as string | null ?? null
+	);
+
 	// ── Handlers ────────────────────────────────────────────────────────────
-	function handleFilterChange(partial: Partial<ExplorerFilterState>) {
-		filterState = { ...filterState, ...partial };
+	function handleFilterChange(key: string, value: DimensionValue | null) {
+		const newFilters = { ...filterState.dimensionFilters };
+		if (value === null) {
+			delete newFilters[key];
+		} else {
+			newFilters[key] = value;
+		}
+		filterState = { ...filterState, dimensionFilters: newFilters };
 	}
 
 	function handleParallelBrush(ranges: {
 		energyRange?: [number, number] | null;
-		batchRange?: [number, number] | null;
 	}) {
-		filterState = { ...filterState, ...ranges };
+		filterState = { ...filterState, energyRange: ranges.energyRange ?? null };
 	}
 
 	function handleTabChange(tab: string) {
@@ -67,12 +73,16 @@
 <PageLayout wide>
 	<h1 class="page-title">Configuration Explorer</h1>
 	<p class="page-intro">
-		Explore the full configuration landscape across all backends, attention implementations,
-		precision settings, and batch sizes. Use the filters to narrow down the dataset, then switch
-		between visualisation modes to uncover patterns in energy efficiency.
+		Explore the full configuration landscape across all backends and tuning dimensions. Use the
+		filters to narrow down the dataset, then switch between visualisation modes to uncover patterns
+		in energy efficiency.
 	</p>
 
-	<ExplorerFilters {filterState} onFilterChange={handleFilterChange} />
+	<ExplorerFilters
+		allResults={data.allResults}
+		{filterState}
+		onFilterChange={handleFilterChange}
+	/>
 
 	<div class="toolbar">
 		<DownloadButton results={filteredResults} totalCount={data.allResults.length} />
@@ -95,6 +105,7 @@
 		{:else if activeTab === 'pca'}
 			<PCAProjection
 				pcaProjection={data.pcaProjection}
+				{selectedBackend}
 				filteredExperimentIds={filteredResults.map((r) => r.experiment_id)}
 			/>
 		{:else if activeTab === 'parallel'}

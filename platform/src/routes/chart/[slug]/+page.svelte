@@ -34,12 +34,8 @@
 
 	// ── Filter state (restored from URL on mount) ──────────────────────────
 	let filterState = $state<ExplorerFilterState>({
-		backend: null,
-		attn: null,
-		precision: null,
-		batchSize: null,
-		energyRange: null,
-		batchRange: null
+		dimensionFilters: {},
+		energyRange: null
 	});
 
 	let timeseriesProgress = $state(0);
@@ -49,45 +45,40 @@
 	const parallelData = $derived(toParallelData(filteredResults));
 	const filteredIds = $derived(filteredResults.map((r) => r.experiment_id));
 
+	// Selected backend for PCA
+	const selectedBackend = $derived(
+		filterState.dimensionFilters.backend as string | null ?? null
+	);
+
 	// ── Export container refs ─────────────────────────────────────────────
 	let exportContainer = $state<HTMLDivElement | undefined>(undefined);
 
 	// ── Filter handlers ───────────────────────────────────────────────────
 	function handleParallelBrush(ranges: {
 		energyRange?: [number, number] | null;
-		batchRange?: [number, number] | null;
 	}) {
-		filterState = { ...filterState, ...ranges };
+		filterState = { ...filterState, energyRange: ranges.energyRange ?? null };
 		syncFilterToUrl();
 	}
 
 	function syncFilterToUrl() {
 		const parts: string[] = [];
-		if (filterState.backend) parts.push(`backend=${encodeURIComponent(filterState.backend)}`);
-		if (filterState.attn) parts.push(`attn=${encodeURIComponent(filterState.attn)}`);
-		if (filterState.precision) parts.push(`precision=${encodeURIComponent(filterState.precision)}`);
-		if (filterState.batchSize !== null) parts.push(`batchSize=${filterState.batchSize}`);
+		for (const [k, v] of Object.entries(filterState.dimensionFilters)) {
+			if (v != null) parts.push(`${k}=${encodeURIComponent(String(v))}`);
+		}
 		const qs = parts.join('&');
 		history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
 	}
 
 	onMount(() => {
-		// Restore filter state from URL query parameters
+		// Restore dimension filters from URL query parameters
 		const params = new URLSearchParams(window.location.search);
-		const backend = params.get('backend');
-		const attn = params.get('attn');
-		const precision = params.get('precision');
-		const batchSizeStr = params.get('batchSize');
-		const batchSize = batchSizeStr !== null ? Number(batchSizeStr) : null;
-
-		if (backend || attn || precision || batchSize !== null) {
-			filterState = {
-				...filterState,
-				backend: backend ?? null,
-				attn: attn ?? null,
-				precision: precision ?? null,
-				batchSize: !isNaN(batchSize as number) ? batchSize : null
-			};
+		const restored: Record<string, string> = {};
+		for (const [key, value] of params.entries()) {
+			restored[key] = value;
+		}
+		if (Object.keys(restored).length > 0) {
+			filterState = { ...filterState, dimensionFilters: restored };
 		}
 	});
 </script>
@@ -131,7 +122,7 @@
 			{:else if slug === 'surface'}
 				<Surface3D results={filteredResults} />
 			{:else if slug === 'pca'}
-				<PCAProjection pcaProjection={data.pcaProjection} filteredExperimentIds={filteredIds} />
+				<PCAProjection pcaProjection={data.pcaProjection} {selectedBackend} filteredExperimentIds={filteredIds} />
 			{:else if slug === 'parallel-coords'}
 				<ParallelCoordinates data={parallelData} onBrush={handleParallelBrush} />
 			{/if}

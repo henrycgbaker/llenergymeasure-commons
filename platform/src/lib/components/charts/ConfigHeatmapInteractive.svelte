@@ -6,7 +6,8 @@
 	import ExpandableDetail from '$lib/components/ExpandableDetail.svelte';
 	import MethodologyLink from './MethodologyLink.svelte';
 	import { toHeatmapData } from '$lib/data/transforms/heatmapData.js';
-	import type { ExperimentResult, HeatmapCell } from '$lib/data/types.js';
+	import { getBackendDefaults, getDimensionLabel, getDimensionValues, sortDimensionValues } from '$lib/data/dimensions.js';
+	import type { DimensionValue, ExperimentResult, HeatmapCell } from '$lib/data/types.js';
 
 	interface Props {
 		allResults: ExperimentResult[];
@@ -15,9 +16,17 @@
 	const { allResults }: Props = $props();
 
 	// ── Filter state ────────────────────────────────────────────────────────
-	let selectedBackend = $state('pytorch');
-	let selectedAttn = $state('sdpa');
+	const availableBackends = $derived(
+		sortDimensionValues(getDimensionValues(allResults, 'backend')) as string[]
+	);
+	let selectedBackend = $state(availableBackends[0] ?? 'pytorch');
 	let selectedMetric = $state<'energy' | 'throughput'>('energy');
+
+	// Backend-specific dimension filters (e.g. { attn_implementation: 'sdpa' })
+	let dimensionFilters = $state<Record<string, DimensionValue>>({});
+
+	// Default heatmap axes for the selected backend
+	const axisDefaults = $derived(getBackendDefaults(allResults, selectedBackend));
 
 	// ── Interaction state ───────────────────────────────────────────────────
 	let hoveredCell = $state<HeatmapCell | null>(null);
@@ -27,7 +36,6 @@
 	let keyboardFocusedCell = $state<HeatmapCell | null>(null);
 
 	// ── Screen reader live region ────────────────────────────────────────────
-	// Updated when keyboard focus moves between cells
 	const liveAnnouncement = $derived.by(() => {
 		const cell = keyboardFocusedCell;
 		if (!cell) return '';
@@ -39,7 +47,13 @@
 	let zoomResetTrigger = $state(0);
 
 	// ── Derived data ────────────────────────────────────────────────────────
-	const cells = $derived(toHeatmapData(allResults, selectedBackend, selectedAttn));
+	const heatmapFilters = $derived({
+		backend: selectedBackend,
+		...dimensionFilters
+	});
+	const cells = $derived(
+		toHeatmapData(allResults, heatmapFilters, axisDefaults.x, axisDefaults.y)
+	);
 
 	// ── Container ref for tooltip width awareness ───────────────────────────
 	let containerEl: HTMLDivElement;
@@ -57,12 +71,13 @@
 	// ── Event handlers ──────────────────────────────────────────────────────
 	function handleBackendChange(value: string) {
 		selectedBackend = value;
+		dimensionFilters = {};
 		selectedCell = null;
 		zoomResetTrigger++;
 	}
 
-	function handleAttnChange(value: string) {
-		selectedAttn = value;
+	function handleDimensionFilterChange(key: string, value: DimensionValue) {
+		dimensionFilters = { ...dimensionFilters, [key]: value };
 		selectedCell = null;
 		zoomResetTrigger++;
 	}
@@ -81,7 +96,6 @@
 
 	function handleCellFocus(cell: HeatmapCell | null) {
 		keyboardFocusedCell = cell;
-		// Also show tooltip for keyboard-focused cell at a fixed position below the chart header
 		if (cell) {
 			hoveredCell = cell;
 			tooltipX = 12;
@@ -92,9 +106,8 @@
 	}
 
 	function handleCellClick(cell: HeatmapCell) {
-		// Toggle: clicking selected cell deselects it
 		selectedCell =
-			selectedCell?.precision === cell.precision && selectedCell?.batch_size === cell.batch_size
+			selectedCell?.xValue === cell.xValue && selectedCell?.yValue === cell.yValue
 				? null
 				: cell;
 	}
@@ -106,11 +119,12 @@
 
 	<!-- Filter controls -->
 	<HeatmapFilters
+		{allResults}
 		{selectedBackend}
-		{selectedAttn}
+		{dimensionFilters}
 		{selectedMetric}
 		onBackendChange={handleBackendChange}
-		onAttnChange={handleAttnChange}
+		onDimensionFilterChange={handleDimensionFilterChange}
 		onMetricChange={handleMetricChange}
 	/>
 
@@ -119,6 +133,8 @@
 		{#if cells.length > 0}
 			<ConfigHeatmap
 				{cells}
+				xAxisLabel={getDimensionLabel(axisDefaults.x)}
+				yAxisLabel={getDimensionLabel(axisDefaults.y)}
 				revealProgress={1}
 				interactive={true}
 				{selectedCell}
@@ -132,7 +148,7 @@
 			/>
 		{:else}
 			<div class="empty-state">
-				<p>No data for this combination. Try a different backend or attention type.</p>
+				<p>No data for this combination. Try a different filter.</p>
 			</div>
 		{/if}
 
@@ -155,16 +171,16 @@
 	<!-- Technical note (NARR-06 depth layer) -->
 	<ExpandableDetail title="Understanding this chart">
 		<p class="chart-note">
-			Each cell represents one hardware/software configuration. The x-axis shows numerical precision
-			(fp32 → int8) and the y-axis shows inference batch size. Colour encodes energy per output
+			Each cell represents one hardware/software configuration. The x-axis shows
+			{getDimensionLabel(axisDefaults.x).toLowerCase()} and the y-axis shows
+			{getDimensionLabel(axisDefaults.y).toLowerCase()}. Colour encodes energy per output
 			token (red = high energy, blue = efficient) when viewing the energy metric, or throughput in
 			tokens/second when viewing the throughput metric.
 		</p>
 		<p class="chart-note">
-			Filters select one backend (PyTorch / vLLM / TensorRT) and one attention implementation (eager
-			/ SDPA / Flash v2) at a time. The ratio vs best is always computed within the selected slice —
-			so "3x" means three times worse than the most efficient configuration in that slice, not
-			globally.
+			Filters select specific dimension values. The ratio vs best is always computed within the
+			selected slice — so "3x" means three times worse than the most efficient configuration in
+			that slice, not globally.
 		</p>
 		<p class="chart-note">
 			Scroll-wheel or pinch to zoom. Click any cell to see full details below the chart. Click again

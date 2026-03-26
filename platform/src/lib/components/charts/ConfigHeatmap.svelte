@@ -10,6 +10,8 @@
 
 	interface Props {
 		cells: HeatmapCell[];
+		xAxisLabel?: string;
+		yAxisLabel?: string;
 		revealProgress?: number; // 0-1, controls how many cells are visible (worst-first)
 		width?: number;
 		height?: number;
@@ -26,6 +28,8 @@
 
 	const {
 		cells,
+		xAxisLabel = 'X',
+		yAxisLabel = 'Y',
 		revealProgress = 1,
 		width = 560,
 		height = 400,
@@ -45,26 +49,22 @@
 	const innerHeight = $derived(height - MARGIN.top - MARGIN.bottom);
 
 	// Unique axis values derived from cells
-	const precisions = $derived(
-		(() => {
-			const order = ['fp32', 'fp16', 'bf16', 'int8'];
-			const present = [...new Set(cells.map((c) => c.precision))];
-			return present.sort((a, b) => {
-				const ai = order.indexOf(a);
-				const bi = order.indexOf(b);
-				return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-			});
-		})()
-	);
+	const xValues = $derived([...new Set(cells.map((c) => c.xValue))].sort((a, b) => {
+		const na = Number(a), nb = Number(b);
+		if (!isNaN(na) && !isNaN(nb)) return na - nb;
+		return a.localeCompare(b);
+	}));
 
-	const batchSizes = $derived(
-		[...new Set(cells.map((c) => c.batch_size))].sort((a, b) => a - b).map(String)
-	);
+	const yValues = $derived([...new Set(cells.map((c) => c.yValue))].sort((a, b) => {
+		const na = Number(a), nb = Number(b);
+		if (!isNaN(na) && !isNaN(nb)) return na - nb;
+		return a.localeCompare(b);
+	}));
 
 	// D3 band scales
-	const xScale = $derived(d3.scaleBand().domain(precisions).range([0, innerWidth]).padding(0.05));
+	const xScale = $derived(d3.scaleBand().domain(xValues).range([0, innerWidth]).padding(0.05));
 
-	const yScale = $derived(d3.scaleBand().domain(batchSizes).range([innerHeight, 0]).padding(0.05));
+	const yScale = $derived(d3.scaleBand().domain(yValues).range([innerHeight, 0]).padding(0.05));
 
 	// Colour scale: depends on metric
 	const energyValues = $derived(cells.map((c) => c.energy));
@@ -95,7 +95,7 @@
 
 	// Set of visible cell keys
 	const visibleKeys = $derived(
-		new Set(sortedCells.slice(0, visibleCount).map((c) => `${c.precision}-${c.batch_size}`))
+		new Set(sortedCells.slice(0, visibleCount).map((c) => `${c.xValue}-${c.yValue}`))
 	);
 
 	// Best and worst cells (by energy)
@@ -109,12 +109,7 @@
 	function updateAxes() {
 		if (!xAxisEl || !yAxisEl) return;
 		d3.select(xAxisEl).call(d3.axisBottom(xScale).tickSizeOuter(0));
-		d3.select(yAxisEl).call(
-			d3
-				.axisLeft(yScale)
-				.tickFormat((d) => `batch ${d}`)
-				.tickSizeOuter(0)
-		);
+		d3.select(yAxisEl).call(d3.axisLeft(yScale).tickSizeOuter(0));
 	}
 
 	onMount(() => {
@@ -170,60 +165,60 @@
 	}
 
 	// ── Keyboard grid navigation ────────────────────────────────────────────
-	let focusedCell = $state<{ precisionIdx: number; batchIdx: number } | null>(null);
+	let focusedCell = $state<{ xIdx: number; yIdx: number } | null>(null);
 
 	// Derived: focused cell id for aria-activedescendant
 	const focusedCellId = $derived(
-		focusedCell ? `cell-${focusedCell.precisionIdx}-${focusedCell.batchIdx}` : undefined
+		focusedCell ? `cell-${focusedCell.xIdx}-${focusedCell.yIdx}` : undefined
 	);
 
 	// Lookup HeatmapCell by grid indices
-	function getCellByIndices(pIdx: number, bIdx: number): HeatmapCell | null {
-		const p = precisions[pIdx];
-		const b = batchSizes[bIdx];
-		if (!p || !b) return null;
-		return cells.find((c) => c.precision === p && c.batch_size === Number(b)) ?? null;
+	function getCellByIndices(xIdx: number, yIdx: number): HeatmapCell | null {
+		const xv = xValues[xIdx];
+		const yv = yValues[yIdx];
+		if (xv === undefined || yv === undefined) return null;
+		return cells.find((c) => c.xValue === xv && c.yValue === yv) ?? null;
 	}
 
 	function handleKeyNavigation(event: KeyboardEvent) {
 		if (!interactive) return;
 
-		const pLen = precisions.length;
-		const bLen = batchSizes.length;
+		const xLen = xValues.length;
+		const yLen = yValues.length;
 
 		// Initialise focus to first cell if none focused
 		if (!focusedCell) {
 			if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
 				event.preventDefault();
-				focusedCell = { precisionIdx: 0, batchIdx: 0 };
+				focusedCell = { xIdx: 0, yIdx: 0 };
 				onCellFocus?.(getCellByIndices(0, 0));
 			}
 			return;
 		}
 
-		let { precisionIdx, batchIdx } = focusedCell;
+		let { xIdx, yIdx } = focusedCell;
 
 		switch (event.key) {
 			case 'ArrowRight':
 				event.preventDefault();
-				precisionIdx = Math.min(precisionIdx + 1, pLen - 1);
+				xIdx = Math.min(xIdx + 1, xLen - 1);
 				break;
 			case 'ArrowLeft':
 				event.preventDefault();
-				precisionIdx = Math.max(precisionIdx - 1, 0);
+				xIdx = Math.max(xIdx - 1, 0);
 				break;
 			case 'ArrowDown':
 				event.preventDefault();
-				batchIdx = Math.min(batchIdx + 1, bLen - 1);
+				yIdx = Math.min(yIdx + 1, yLen - 1);
 				break;
 			case 'ArrowUp':
 				event.preventDefault();
-				batchIdx = Math.max(batchIdx - 1, 0);
+				yIdx = Math.max(yIdx - 1, 0);
 				break;
 			case 'Enter':
 			case ' ': {
 				event.preventDefault();
-				const cell = getCellByIndices(precisionIdx, batchIdx);
+				const cell = getCellByIndices(xIdx, yIdx);
 				if (cell) onCellClick?.(cell);
 				return;
 			}
@@ -236,15 +231,15 @@
 				return;
 		}
 
-		focusedCell = { precisionIdx, batchIdx };
-		onCellFocus?.(getCellByIndices(precisionIdx, batchIdx));
+		focusedCell = { xIdx, yIdx };
+		onCellFocus?.(getCellByIndices(xIdx, yIdx));
 	}
 
 	function isFocusedCell(cell: HeatmapCell): boolean {
 		if (!focusedCell) return false;
 		return (
-			precisions[focusedCell.precisionIdx] === cell.precision &&
-			batchSizes[focusedCell.batchIdx] === String(cell.batch_size)
+			xValues[focusedCell.xIdx] === cell.xValue &&
+			yValues[focusedCell.yIdx] === cell.yValue
 		);
 	}
 
@@ -281,20 +276,19 @@
 
 		THRESHOLDS.forEach((threshold) => {
 			const cutoff = minE * threshold;
-			batchSizes.forEach((batchStr, i) => {
+			yValues.forEach((yv, i) => {
 				if (i === 0) return;
-				const prevBatch = Number(batchSizes[i - 1]);
-				const currBatch = Number(batchStr);
+				const prevYv = yValues[i - 1];
 
-				const prevEnergies = cells.filter((c) => c.batch_size === prevBatch).map((c) => c.energy);
-				const currEnergies = cells.filter((c) => c.batch_size === currBatch).map((c) => c.energy);
+				const prevEnergies = cells.filter((c) => c.yValue === prevYv).map((c) => c.energy);
+				const currEnergies = cells.filter((c) => c.yValue === yv).map((c) => c.energy);
 
 				const prevAvg = prevEnergies.reduce((s, e) => s + e, 0) / (prevEnergies.length || 1);
 				const currAvg = currEnergies.reduce((s, e) => s + e, 0) / (currEnergies.length || 1);
 
 				if ((prevAvg >= cutoff && currAvg < cutoff) || (prevAvg < cutoff && currAvg >= cutoff)) {
-					const y1top = yScale(batchStr) ?? 0;
-					const prevBandY = yScale(batchSizes[i - 1]) ?? 0;
+					const y1top = yScale(yv) ?? 0;
+					const prevBandY = yScale(prevYv) ?? 0;
 					const bandH = yScale.bandwidth();
 					const lineY = prevBandY + bandH + (y1top - prevBandY - bandH) / 2;
 					lines.push({
@@ -315,21 +309,18 @@
 
 	function isSelectedCell(cell: HeatmapCell): boolean {
 		if (!selectedCell) return false;
-		return cell.precision === selectedCell.precision && cell.batch_size === selectedCell.batch_size;
+		return cell.xValue === selectedCell.xValue && cell.yValue === selectedCell.yValue;
 	}
 
 	// ── Cell value text colour ───────────────────────────────────────────────
-	// Cells near the extremes (efficient blue / wasteful red) are dark — use white text.
-	// Cells near the neutral midpoint are light — use dark text.
-	// Threshold: cells within the middle 35% of the energy range use dark text.
 	function cellTextColor(cell: HeatmapCell): string {
 		if (maxEnergy === minEnergy) return 'var(--color-text)';
-		const t = (cell.energy - minEnergy) / (maxEnergy - minEnergy); // 0 = efficient, 1 = wasteful
+		const t = (cell.energy - minEnergy) / (maxEnergy - minEnergy);
 		const distFromMid = Math.abs(t - 0.5);
 		return distFromMid > 0.175 ? '#ffffff' : 'var(--color-text)';
 	}
 
-	// Format energy value for cell label: 2-4 significant figures
+	// Format energy value for cell label
 	function formatCellValue(cell: HeatmapCell): string {
 		if (metric === 'energy') {
 			const v = cell.energy;
@@ -357,7 +348,7 @@
 		class="heatmap-svg"
 		class:heatmap-svg--interactive={interactive}
 		role={interactive ? 'grid' : 'img'}
-		aria-label="Configuration energy heatmap: grid of precision (fp32, fp16, bf16, int8) on the x-axis versus batch size on the y-axis. Cells are coloured on a blue-to-red diverging scale — deep blue indicates the most energy-efficient configurations and deep red indicates the most wasteful. Numeric energy values are shown in each cell in joules per token."
+		aria-label="Configuration energy heatmap: {xAxisLabel} on the x-axis versus {yAxisLabel} on the y-axis. Cells are coloured on a blue-to-red diverging scale — deep blue indicates the most energy-efficient configurations and deep red indicates the most wasteful."
 		tabindex={interactive ? 0 : undefined}
 		aria-activedescendant={interactive ? focusedCellId : undefined}
 		onkeydown={interactive ? handleKeyNavigation : undefined}
@@ -366,31 +357,31 @@
 			<!-- Zoom group: receives d3 transform -->
 			<g bind:this={zoomGroupEl} class="zoom-group">
 				<!-- Cells -->
-				{#each cells as cell (cell.precision + '-' + cell.batch_size)}
-					{@const x = xScale(cell.precision) ?? 0}
-					{@const y = yScale(String(cell.batch_size)) ?? 0}
+				{#each cells as cell (cell.xValue + '-' + cell.yValue)}
+					{@const x = xScale(cell.xValue) ?? 0}
+					{@const y = yScale(cell.yValue) ?? 0}
 					{@const w = xScale.bandwidth()}
 					{@const h = yScale.bandwidth()}
-					{@const key = `${cell.precision}-${cell.batch_size}`}
+					{@const key = `${cell.xValue}-${cell.yValue}`}
 					{@const isVisible = visibleKeys.has(key)}
 					{@const isWorst =
-						cell.precision === worstCell?.precision && cell.batch_size === worstCell?.batch_size}
+						cell.xValue === worstCell?.xValue && cell.yValue === worstCell?.yValue}
 					{@const isBest =
-						cell.precision === bestCell?.precision && cell.batch_size === bestCell?.batch_size}
+						cell.xValue === bestCell?.xValue && cell.yValue === bestCell?.yValue}
 					{@const isSelected = isSelectedCell(cell)}
 					{@const isFocused = interactive && isFocusedCell(cell)}
 					{@const revealOrder = sortedCells.findIndex(
-						(c) => c.precision === cell.precision && c.batch_size === cell.batch_size
+						(c) => c.xValue === cell.xValue && c.yValue === cell.yValue
 					)}
-					{@const precisionIdx = precisions.indexOf(cell.precision)}
-					{@const batchIdx = batchSizes.indexOf(String(cell.batch_size))}
+					{@const xIdx = xValues.indexOf(cell.xValue)}
+					{@const yIdx = yValues.indexOf(cell.yValue)}
 					<g
 						class="cell-group"
 						class:cell-group--interactive={interactive}
-						id={interactive ? `cell-${precisionIdx}-${batchIdx}` : undefined}
+						id={interactive ? `cell-${xIdx}-${yIdx}` : undefined}
 						role={interactive ? 'gridcell' : undefined}
-						aria-rowindex={interactive ? batchIdx + 1 : undefined}
-						aria-colindex={interactive ? precisionIdx + 1 : undefined}
+						aria-rowindex={interactive ? yIdx + 1 : undefined}
+						aria-colindex={interactive ? xIdx + 1 : undefined}
 						aria-selected={interactive ? isSelected : undefined}
 						aria-label={interactive
 							? `${cell.label}: ${cell.energy.toFixed(4)} J/token`
@@ -440,7 +431,7 @@
 								font-weight="bold">Worst</text
 							>
 						{/if}
-						<!-- Visible cell value: provides a non-colour channel for greyscale / colourblind readers -->
+						<!-- Visible cell value -->
 						{#if isVisible}
 							<text
 								x={x + w / 2}
@@ -496,7 +487,7 @@
 				y={innerHeight + MARGIN.bottom - 6}
 				text-anchor="middle"
 				font-size="12"
-				fill="var(--color-text-muted)">Precision</text
+				fill="var(--color-text-muted)">{xAxisLabel}</text
 			>
 
 			<!-- Y Axis -->

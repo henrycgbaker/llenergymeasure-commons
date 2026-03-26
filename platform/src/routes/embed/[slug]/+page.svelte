@@ -21,12 +21,8 @@
 	const slug = $derived(data.slug as ChartSlug);
 
 	let filterState = $state<ExplorerFilterState>({
-		backend: null,
-		attn: null,
-		precision: null,
-		batchSize: null,
-		energyRange: null,
-		batchRange: null
+		dimensionFilters: {},
+		energyRange: null
 	});
 
 	let timeseriesProgress = $state(0);
@@ -35,11 +31,14 @@
 	const parallelData = $derived(toParallelData(filteredResults));
 	const filteredIds = $derived(filteredResults.map((r) => r.experiment_id));
 
+	const selectedBackend = $derived(
+		filterState.dimensionFilters.backend as string | null ?? null
+	);
+
 	function handleParallelBrush(ranges: {
 		energyRange?: [number, number] | null;
-		batchRange?: [number, number] | null;
 	}) {
-		filterState = { ...filterState, ...ranges };
+		filterState = { ...filterState, energyRange: ranges.energyRange ?? null };
 	}
 
 	let resizeObserver: ResizeObserver | null = null;
@@ -49,28 +48,18 @@
 	}
 
 	onMount(() => {
-		// Restore filter state from URL query parameters (per Research pitfall 2)
+		// Restore dimension filters from URL query parameters
 		const params = new URLSearchParams(window.location.search);
-		const backend = params.get('backend');
-		const attn = params.get('attn');
-		const precision = params.get('precision');
-		const batchSizeStr = params.get('batchSize');
-		const batchSize = batchSizeStr !== null ? Number(batchSizeStr) : null;
-
-		if (backend || attn || precision || batchSize !== null) {
-			filterState = {
-				...filterState,
-				backend: backend ?? null,
-				attn: attn ?? null,
-				precision: precision ?? null,
-				batchSize: !isNaN(batchSize as number) ? batchSize : null
-			};
+		const restored: Record<string, string> = {};
+		for (const [key, value] of params.entries()) {
+			restored[key] = value;
+		}
+		if (Object.keys(restored).length > 0) {
+			filterState = { ...filterState, dimensionFilters: restored };
 		}
 
-		// Send initial height immediately
 		sendHeight();
 
-		// ResizeObserver: send height to parent on resize
 		resizeObserver = new ResizeObserver(() => {
 			sendHeight();
 		});
@@ -94,7 +83,7 @@
 		{:else if slug === 'surface'}
 			<Surface3D results={filteredResults} />
 		{:else if slug === 'pca'}
-			<PCAProjection pcaProjection={data.pcaProjection} filteredExperimentIds={filteredIds} />
+			<PCAProjection pcaProjection={data.pcaProjection} {selectedBackend} filteredExperimentIds={filteredIds} />
 		{:else if slug === 'parallel-coords'}
 			<ParallelCoordinates data={parallelData} onBrush={handleParallelBrush} />
 		{/if}

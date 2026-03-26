@@ -3,7 +3,7 @@ import { toParallelData } from '../parallelCoordsData.js';
 import type { ExperimentResult } from '../../types.js';
 import fixtureData from '../../../../../static/data/fixture-results.json';
 
-const fixtures = fixtureData as ExperimentResult[];
+const fixtures = fixtureData as unknown as ExperimentResult[];
 
 describe('toParallelData', () => {
 	it('returns array of ParallelRecord with required fields', () => {
@@ -11,28 +11,44 @@ describe('toParallelData', () => {
 		expect(records.length).toBeGreaterThan(0);
 		for (const r of records) {
 			expect(r).toHaveProperty('experiment_id');
-			expect(r).toHaveProperty('precision');
-			expect(r).toHaveProperty('batch_size');
-			expect(r).toHaveProperty('backend');
-			expect(r).toHaveProperty('attn_implementation');
+			expect(r).toHaveProperty('dimensions');
 			expect(r).toHaveProperty('avg_energy_per_token_j');
+			expect(typeof r.experiment_id).toBe('string');
+			expect(typeof r.dimensions).toBe('object');
+			expect(typeof r.avg_energy_per_token_j).toBe('number');
 		}
 	});
 
-	it('handles all 180 fixture records', () => {
+	it('handles all fixture records', () => {
 		const records = toParallelData(fixtures);
-		expect(records).toHaveLength(180);
+		expect(records).toHaveLength(fixtures.length);
 	});
 
-	it('categorical fields are strings, numeric fields are numbers', () => {
+	it('dimensions include backend and precision', () => {
 		const records = toParallelData(fixtures);
 		for (const r of records) {
-			expect(typeof r.precision).toBe('string');
-			expect(typeof r.backend).toBe('string');
-			expect(typeof r.attn_implementation).toBe('string');
-			expect(typeof r.experiment_id).toBe('string');
-			expect(typeof r.batch_size).toBe('number');
-			expect(typeof r.avg_energy_per_token_j).toBe('number');
+			expect(r.dimensions).toHaveProperty('backend');
+			expect(r.dimensions).toHaveProperty('precision');
+		}
+	});
+
+	it('pytorch records have batch_size in dimensions', () => {
+		const records = toParallelData(fixtures);
+		const pytorch = records.filter((r) => r.dimensions.backend === 'pytorch');
+		expect(pytorch.length).toBeGreaterThan(0);
+		for (const r of pytorch) {
+			expect(r.dimensions).toHaveProperty('batch_size');
+			expect(typeof r.dimensions.batch_size).toBe('number');
+		}
+	});
+
+	it('vllm records have enforce_eager in dimensions', () => {
+		const records = toParallelData(fixtures);
+		const vllm = records.filter((r) => r.dimensions.backend === 'vllm');
+		expect(vllm.length).toBeGreaterThan(0);
+		for (const r of vllm) {
+			expect(r.dimensions).toHaveProperty('enforce_eager');
+			expect(typeof r.dimensions.enforce_eager).toBe('boolean');
 		}
 	});
 

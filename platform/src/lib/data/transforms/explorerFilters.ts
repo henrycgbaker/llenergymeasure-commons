@@ -1,24 +1,21 @@
 import type { ExperimentResult, ExplorerFilterState } from '../types.js';
+import { getDimension } from '../dimensions.js';
 
 export function applyExplorerFilters(
 	results: ExperimentResult[],
 	filters: ExplorerFilterState
 ): ExperimentResult[] {
 	return results.filter((r) => {
-		if (filters.backend !== null && r.backend !== filters.backend) return false;
-		if (filters.attn !== null && r.effective_config.attn_implementation !== filters.attn)
-			return false;
-		if (filters.precision !== null && r.effective_config.precision !== filters.precision)
-			return false;
-		if (filters.batchSize !== null && r.effective_config.batch_size !== filters.batchSize)
-			return false;
+		// Check each dimension filter
+		for (const [key, value] of Object.entries(filters.dimensionFilters)) {
+			if (value === null) continue;
+			const actual = getDimension(r, key);
+			if (actual === undefined || actual !== value) return false;
+		}
+		// Energy range filter
 		if (filters.energyRange !== null) {
 			const [lo, hi] = filters.energyRange;
 			if (r.avg_energy_per_token_j < lo || r.avg_energy_per_token_j > hi) return false;
-		}
-		if (filters.batchRange !== null) {
-			const [lo, hi] = filters.batchRange;
-			if (r.effective_config.batch_size < lo || r.effective_config.batch_size > hi) return false;
 		}
 		return true;
 	});

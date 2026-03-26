@@ -2,6 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import ConfigHeatmapInteractive from './ConfigHeatmapInteractive.svelte';
 	import { toSurfaceGrid } from '$lib/data/transforms/surfaceData.js';
+	import { getAvailableDimensions, getDimensionLabel } from '$lib/data/dimensions.js';
 	import type { ExperimentResult } from '$lib/data/types.js';
 
 	interface Props {
@@ -16,12 +17,9 @@
 		yAxis = $bindable('batch_size')
 	}: Props = $props();
 
-	const AXIS_OPTIONS = [
-		{ value: 'precision', label: 'Precision' },
-		{ value: 'batch_size', label: 'Batch Size' },
-		{ value: 'backend', label: 'Backend' },
-		{ value: 'attn_implementation', label: 'Attention' }
-	];
+	const AXIS_OPTIONS = $derived(
+		getAvailableDimensions(results).map((k) => ({ value: k, label: getDimensionLabel(k) }))
+	);
 
 	// RdBu colour scale matching design tokens
 	const COLORSCALE: [number, string][] = [

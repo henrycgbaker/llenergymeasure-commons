@@ -1,13 +1,13 @@
+export type DimensionValue = string | number | boolean;
+
 export interface EffectiveConfig {
 	model: string;
 	backend: string;
 	precision: string;
-	batch_size: number;
-	attn_implementation: string;
-	load_in_8bit: boolean;
 	n: number;
 	max_input_tokens: number;
 	max_output_tokens: number;
+	dimensions: Record<string, DimensionValue>;
 }
 
 export interface ExperimentResult {
@@ -29,8 +29,8 @@ export interface ExperimentResult {
 	flops_per_second: number | null;
 	baseline_power_w: number | null;
 	energy_adjusted_j: number | null;
-	energy_per_device_j: number | null;
-	energy_breakdown: Record<string, number> | null;
+	energy_per_device_j: number[] | null;
+	energy_breakdown: Record<string, unknown> | null;
 	multi_gpu: boolean | null;
 	environment_snapshot: Record<string, unknown> | null;
 	measurement_warnings: string[];
@@ -49,10 +49,9 @@ export interface ExperimentResult {
 }
 
 export interface HeatmapCell {
-	precision: string;
-	batch_size: number;
-	backend: string;
-	attn_implementation: string;
+	xValue: string;
+	yValue: string;
+	dimensions: Record<string, DimensionValue>;
 	energy: number;
 	throughput: number;
 	total_energy_j: number;
@@ -75,20 +74,13 @@ export interface SurfaceGrid {
 
 export interface ParallelRecord {
 	experiment_id: string;
-	precision: string;
-	batch_size: number;
-	backend: string;
-	attn_implementation: string;
+	dimensions: Record<string, DimensionValue>;
 	avg_energy_per_token_j: number;
 }
 
 export interface ExplorerFilterState {
-	backend: string | null;
-	attn: string | null;
-	precision: string | null;
-	batchSize: number | null;
+	dimensionFilters: Record<string, DimensionValue | null>;
 	energyRange: [number, number] | null;
-	batchRange: [number, number] | null;
 }
 
 export interface PCAPoint {
@@ -99,12 +91,15 @@ export interface PCAPoint {
 	energy: number;
 	throughput: number;
 	backend: string;
-	precision: string;
-	batch_size: number;
-	attn: string;
+	dimensions: Record<string, DimensionValue>;
 }
 
 export interface PCAProjection {
-	explained_variance: number[];
-	points: PCAPoint[];
+	backends: Record<
+		string,
+		{
+			explained_variance: number[];
+			points: PCAPoint[];
+		}
+	>;
 }

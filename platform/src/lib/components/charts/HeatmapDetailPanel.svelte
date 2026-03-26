@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExpandableDetail from '$lib/components/ExpandableDetail.svelte';
 	import { smartphoneCharges, formatEquivalence } from '$lib/data/transforms/equivalences.js';
+	import { getDimensionLabel, formatDimensionValue } from '$lib/data/dimensions.js';
 	import type { HeatmapCell } from '$lib/data/types.js';
 
 	interface Props {
@@ -25,23 +26,14 @@
 			<table class="detail-table">
 				<caption class="detail-table__caption">Configuration</caption>
 				<tbody>
-					<tr>
-						<td class="detail-table__key">Precision</td>
-						<td class="detail-table__value detail-table__value--mono">{cell.precision}</td>
-					</tr>
-					<tr>
-						<td class="detail-table__key">Batch size</td>
-						<td class="detail-table__value detail-table__value--mono">{cell.batch_size}</td>
-					</tr>
-					<tr>
-						<td class="detail-table__key">Backend</td>
-						<td class="detail-table__value detail-table__value--mono">{cell.backend}</td>
-					</tr>
-					<tr>
-						<td class="detail-table__key">Attention</td>
-						<td class="detail-table__value detail-table__value--mono">{cell.attn_implementation}</td
-						>
-					</tr>
+					{#each Object.entries(cell.dimensions) as [key, value] (key)}
+						<tr>
+							<td class="detail-table__key">{getDimensionLabel(key)}</td>
+							<td class="detail-table__value detail-table__value--mono"
+								>{formatDimensionValue(key, value)}</td
+							>
+						</tr>
+					{/each}
 				</tbody>
 			</table>
 
@@ -108,7 +100,7 @@
 			<p class="detail-note">
 				Energy per token is measured as total GPU energy divided by output tokens generated, under
 				steady-state conditions with warm-up samples excluded. Ratio vs best is computed within the
-				same backend + attention slice so filters are directly comparable.
+				same filter slice so configurations are directly comparable.
 			</p>
 			<p class="detail-note">
 				Smartphone equivalence assumes 128 output tokens/query, 12 Wh per full charge, and a 10M

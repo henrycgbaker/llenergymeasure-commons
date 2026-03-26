@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import type { PCAProjection } from '$lib/data/types.js';
+	import { getDimensionLabel, formatDimensionValue } from '$lib/data/dimensions.js';
 
 	interface Props {
 		pcaProjection: PCAProjection;
+		selectedBackend: string | null;
 		filteredExperimentIds: string[];
 	}
 
-	const { pcaProjection, filteredExperimentIds }: Props = $props();
+	const { pcaProjection, selectedBackend, filteredExperimentIds }: Props = $props();
 
 	// RdBu colour scale matching design tokens
 	const COLORSCALE: [number, string][] = [
@@ -18,7 +20,6 @@
 
 	let plotDiv = $state<HTMLDivElement | undefined>(undefined);
 	let webglUnavailable = $state(false);
-	// Plotly has no @types package; using unknown with runtime casts
 	let PlotlyModule = $state<unknown>(null);
 
 	function isWebGLAvailable(): boolean {
@@ -43,14 +44,30 @@
 		return outMin + ((value - min) / (max - min)) * (outMax - outMin);
 	}
 
-	function buildTrace() {
-		const points = pcaProjection.points;
+	// Get the active backend data from the per-backend PCA structure
+	const activeBackendData = $derived(() => {
+		const backend = selectedBackend ?? Object.keys(pcaProjection.backends)[0];
+		return pcaProjection.backends[backend] ?? null;
+	});
 
+	function buildTrace() {
+		const backendData = activeBackendData();
+		if (!backendData) return null;
+
+		const points = backendData.points;
 		const throughputs = points.map((p) => p.throughput);
 		const minT = Math.min(...throughputs);
 		const maxT = Math.max(...throughputs);
 
 		const filteredSet = new Set(filteredExperimentIds);
+
+		// Build hover text from dynamic dimensions
+		const hoverTexts = points.map((p) => {
+			const dimLines = Object.entries(p.dimensions)
+				.map(([k, v]) => `${getDimensionLabel(k)}: ${formatDimensionValue(k, v)}`)
+				.join('<br>');
+			return `PC1: ${p.pc1.toFixed(2)}<br>PC2: ${p.pc2.toFixed(2)}<br>PC3: ${p.pc3.toFixed(2)}<br>Energy: ${p.energy.toFixed(4)} J/tok<br>${dimLines}`;
+		});
 
 		return {
 			type: 'scatter3d',
@@ -65,20 +82,22 @@
 				opacity: points.map((p) => (filteredSet.has(p.experiment_id) ? 1.0 : 0.15)),
 				colorbar: { title: 'Energy (J/tok)', thickness: 12 }
 			},
-			hovertemplate:
-				'PC1: %{x:.2f}<br>PC2: %{y:.2f}<br>PC3: %{z:.2f}<br>Energy: %{customdata[0]:.4f} J/tok<br>%{customdata[1]} / %{customdata[2]} / bs%{customdata[3]}<extra></extra>',
-			customdata: points.map((p) => [p.energy, p.backend, p.precision, p.batch_size])
+			hovertext: hoverTexts,
+			hoverinfo: 'text'
 		};
 	}
 
 	function buildLayout() {
-		const variance = pcaProjection.explained_variance;
+		const backendData = activeBackendData();
+		if (!backendData) return {};
+
+		const variance = backendData.explained_variance;
 		return {
 			scene: {
 				camera: { eye: { x: 1.5, y: 1.5, z: 1.0 } },
 				xaxis: { title: `PC1 (${(variance[0] * 100).toFixed(1)}%)` },
-				yaxis: { title: `PC2 (${(variance[1] * 100).toFixed(1)}%)` },
-				zaxis: { title: `PC3 (${(variance[2] * 100).toFixed(1)}%)` }
+				yaxis: { title: `PC2 (${((variance[1] ?? 0) * 100).toFixed(1)}%)` },
+				zaxis: { title: `PC3 (${((variance[2] ?? 0) * 100).toFixed(1)}%)` }
 			},
 			margin: { l: 0, r: 0, t: 40, b: 0 },
 			paper_bgcolor: 'transparent'
@@ -88,8 +107,10 @@
 	function renderChart() {
 		const Plotly = getPlotly();
 		if (!Plotly || !plotDiv) return;
+		const trace = buildTrace();
+		if (!trace) return;
 		const config = { responsive: true, displayModeBar: false };
-		Plotly.newPlot(plotDiv, [buildTrace()], buildLayout(), config);
+		Plotly.newPlot(plotDiv, [trace], buildLayout(), config);
 	}
 
 	onMount(async () => {
@@ -110,18 +131,21 @@
 
 	// Reactive update when filter or projection changes
 	$effect(() => {
-		// Capture reactive dependencies
 		const _ids = filteredExperimentIds;
 		const _projection = pcaProjection;
+		const _backend = selectedBackend;
 
 		const Plotly = getPlotly();
 		if (!Plotly || !plotDiv) return;
 
 		void _projection;
 		void _ids;
+		void _backend;
 
+		const trace = buildTrace();
+		if (!trace) return;
 		const config = { responsive: true, displayModeBar: false };
-		Plotly.react(plotDiv, [buildTrace()], buildLayout(), config);
+		Plotly.react(plotDiv, [trace], buildLayout(), config);
 	});
 </script>
 
@@ -136,7 +160,7 @@
 		class="chart-container"
 		bind:this={plotDiv}
 		role="img"
-		aria-label="3D PCA projection scatter plot: each of the 24 model configurations is plotted as a dot in principal component space. The three axes represent PC1, PC2, and PC3 — the top three components explaining configuration variance. Dot colour encodes energy per token on a blue-to-red scale: blue dots are efficient configurations, red dots are wasteful. Dot size encodes throughput. Proximity indicates similar configuration profiles."
+		aria-label="3D PCA projection scatter plot: each configuration is plotted as a dot in principal component space. Dot colour encodes energy per token on a blue-to-red scale. Dot size encodes throughput. Proximity indicates similar configuration profiles."
 	></div>
 {/if}
 

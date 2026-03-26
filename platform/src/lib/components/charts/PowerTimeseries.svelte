@@ -7,6 +7,7 @@
 	import { synthesisePowerCurve } from '$lib/data/transforms/timeseriesData.js';
 	import { smartphoneCharges } from '$lib/data/transforms/equivalences.js';
 	import type { ExperimentResult, PowerPoint } from '$lib/data/types.js';
+	import { getAllDimensions, formatDimensionValue } from '$lib/data/dimensions.js';
 
 	interface Props {
 		allResults: ExperimentResult[];
@@ -21,11 +22,11 @@
 		const list: { label: string; id: string; result: ExperimentResult }[] = [];
 
 		for (const r of allResults) {
-			const c = r.effective_config;
-			const id = `${c.precision}__${c.batch_size}__${c.backend}__${c.attn_implementation}`;
+			const dims = getAllDimensions(r);
+			const id = Object.entries(dims).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('__');
 			if (!seen.has(id)) {
 				seen.add(id);
-				const label = `${c.precision}, batch ${c.batch_size}, ${c.backend}, ${c.attn_implementation}`;
+				const label = Object.entries(dims).map(([k, v]) => `${formatDimensionValue(k, v)}`).join(', ');
 				list.push({ label, id, result: r });
 			}
 		}
@@ -184,8 +185,8 @@
 	// ── Config summary lines for panel titles ──────────────────────────────
 	function configSummary(result: ExperimentResult | null): string {
 		if (!result) return '';
-		const c = result.effective_config;
-		return `${c.precision}, batch ${c.batch_size}`;
+		const dims = getAllDimensions(result);
+		return Object.entries(dims).map(([k, v]) => formatDimensionValue(k, v)).join(', ');
 	}
 
 	function panelTitle(id: string): string {

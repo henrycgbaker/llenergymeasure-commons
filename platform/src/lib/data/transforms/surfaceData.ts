@@ -1,31 +1,14 @@
 import type { ExperimentResult, SurfaceGrid } from '../types.js';
-
-const AXIS_LABELS: Record<string, string> = {
-	precision: 'Precision',
-	batch_size: 'Batch Size',
-	backend: 'Backend',
-	attn_implementation: 'Attention'
-};
+import { getDimension, getDimensionLabel } from '../dimensions.js';
 
 function getAxisValue(result: ExperimentResult, axis: string): string {
-	switch (axis) {
-		case 'precision':
-			return result.effective_config.precision;
-		case 'batch_size':
-			return String(result.effective_config.batch_size);
-		case 'backend':
-			return result.backend;
-		case 'attn_implementation':
-			return result.effective_config.attn_implementation;
-		default:
-			return String((result as unknown as Record<string, unknown>)[axis] ?? '');
-	}
+	const val = getDimension(result, axis);
+	return val === undefined ? '' : String(val);
 }
 
-function sortAxisValues(values: string[], axis: string): string[] {
-	if (axis === 'batch_size') {
-		return [...values].sort((a, b) => Number(a) - Number(b));
-	}
+function sortAxisValues(values: string[]): string[] {
+	const allNumeric = values.every((v) => !isNaN(Number(v)));
+	if (allNumeric) return [...values].sort((a, b) => Number(a) - Number(b));
 	return [...values].sort();
 }
 
@@ -42,15 +25,17 @@ export function toSurfaceGrid(
 		yValuesSet.add(getAxisValue(r, yAxis));
 	}
 
-	const x = sortAxisValues([...xValuesSet], xAxis);
-	const y = sortAxisValues([...yValuesSet], yAxis);
+	const x = sortAxisValues([...xValuesSet]);
+	const y = sortAxisValues([...yValuesSet]);
 
 	const xIndex = new Map(x.map((v, i) => [v, i]));
 	const yIndex = new Map(y.map((v, i) => [v, i]));
 
 	// Accumulate sums and counts for averaging
 	const sums: number[][] = Array.from({ length: y.length }, () => new Array(x.length).fill(0));
-	const counts: number[][] = Array.from({ length: y.length }, () => new Array(x.length).fill(0));
+	const counts: number[][] = Array.from({ length: y.length }, () =>
+		new Array(x.length).fill(0)
+	);
 
 	for (const r of results) {
 		const xi = xIndex.get(getAxisValue(r, xAxis));
@@ -92,7 +77,7 @@ export function toSurfaceGrid(
 		x,
 		y,
 		z,
-		xLabel: AXIS_LABELS[xAxis] ?? xAxis,
-		yLabel: AXIS_LABELS[yAxis] ?? yAxis
+		xLabel: getDimensionLabel(xAxis),
+		yLabel: getDimensionLabel(yAxis)
 	};
 }

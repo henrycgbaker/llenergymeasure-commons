@@ -3,13 +3,11 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import * as d3 from 'd3';
 	import type { ParallelRecord } from '$lib/data/types.js';
+	import { getDimensionLabel, formatDimensionValue } from '$lib/data/dimensions.js';
 
 	interface Props {
 		data: ParallelRecord[];
-		onBrush: (_ranges: {
-			energyRange?: [number, number] | null;
-			batchRange?: [number, number] | null;
-		}) => void;
+		onBrush: (_ranges: { energyRange?: [number, number] | null }) => void;
 	}
 
 	const { data, onBrush }: Props = $props();
@@ -31,33 +29,46 @@
 	const innerWidth = $derived(width - MARGIN.left - MARGIN.right);
 	const innerHeight = $derived(height - MARGIN.top - MARGIN.bottom);
 
-	// Axis definitions — order is mutable (drag-reorder)
-	type AxisKey = keyof ParallelRecord;
-	let axisOrder = $state<AxisKey[]>([
-		'precision',
-		'batch_size',
-		'backend',
-		'attn_implementation',
-		'avg_energy_per_token_j'
-	]);
+	// Discover axes dynamically from data dimensions + energy metric
+	const axisKeys = $derived(() => {
+		if (data.length === 0) return ['avg_energy_per_token_j'];
+		const dimKeys = Object.keys(data[0].dimensions);
+		return [...dimKeys, 'avg_energy_per_token_j'];
+	});
 
-	const AXIS_LABELS: Record<AxisKey, string> = {
-		experiment_id: 'ID',
-		precision: 'Precision',
-		batch_size: 'Batch Size',
-		backend: 'Backend',
-		attn_implementation: 'Attention',
-		avg_energy_per_token_j: 'Energy (J/tok)'
-	};
+	let axisOrder = $state<string[]>([]);
+
+	// Reset axis order when data changes
+	$effect(() => {
+		const keys = axisKeys();
+		axisOrder = keys;
+	});
+
+	function getAxisLabel(key: string): string {
+		if (key === 'avg_energy_per_token_j') return 'Energy (J/tok)';
+		return getDimensionLabel(key);
+	}
+
+	function getRecordValue(record: ParallelRecord, key: string): number | string {
+		if (key === 'avg_energy_per_token_j') return record.avg_energy_per_token_j;
+		const val = record.dimensions[key];
+		if (val === undefined) return '';
+		return typeof val === 'boolean' ? (val ? 'Yes' : 'No') : val;
+	}
+
+	function isNumericAxis(key: string, records: ParallelRecord[]): boolean {
+		if (key === 'avg_energy_per_token_j') return true;
+		return records.every((r) => typeof r.dimensions[key] === 'number');
+	}
 
 	// Scales: categorical axes use scalePoint, numeric use scaleLinear
-	function buildScale(key: AxisKey, records: ParallelRecord[], h: number) {
-		if (key === 'batch_size' || key === 'avg_energy_per_token_j') {
-			const vals = records.map((r) => r[key] as number);
+	function buildScale(key: string, records: ParallelRecord[], h: number) {
+		if (isNumericAxis(key, records)) {
+			const vals = records.map((r) => getRecordValue(r, key) as number);
 			const [lo, hi] = d3.extent(vals) as [number, number];
 			return d3.scaleLinear().domain([lo, hi]).range([h, 0]).nice();
 		} else {
-			const vals = [...new Set(records.map((r) => String(r[key])))].sort();
+			const vals = [...new Set(records.map((r) => String(getRecordValue(r, key))))].sort();
 			return d3.scalePoint().domain(vals).range([h, 0]).padding(0.2);
 		}
 	}
@@ -66,46 +77,44 @@
 	function buildColorScale(records: ParallelRecord[]) {
 		const vals = records.map((r) => r.avg_energy_per_token_j);
 		const [lo, hi] = d3.extent(vals) as [number, number];
-		// Reversed domain: lo=blue, hi=red
 		return d3.scaleSequential(d3.interpolateRdBu).domain([hi, lo]);
 	}
 
-	// Map a record's value for a given axis key to a pixel y coordinate
 	function getY(
-		key: AxisKey,
+		key: string,
 		record: ParallelRecord,
-		scale: d3.ScaleLinear<number, number> | d3.ScalePoint<string>
+		scale: d3.ScaleLinear<number, number> | d3.ScalePoint<string>,
+		records: ParallelRecord[]
 	): number {
-		if (key === 'batch_size' || key === 'avg_energy_per_token_j') {
-			return (scale as d3.ScaleLinear<number, number>)(record[key] as number) ?? 0;
+		if (isNumericAxis(key, records)) {
+			return (scale as d3.ScaleLinear<number, number>)(getRecordValue(record, key) as number) ?? 0;
 		} else {
-			return (scale as d3.ScalePoint<string>)(String(record[key])) ?? 0;
+			return (scale as d3.ScalePoint<string>)(String(getRecordValue(record, key))) ?? 0;
 		}
 	}
 
-	// Build a polyline path for a record given the current axis order and x scale
 	function buildPath(
 		record: ParallelRecord,
-		axes: AxisKey[],
+		axes: string[],
 		xScale: d3.ScalePoint<string>,
-		scales: Map<AxisKey, d3.ScaleLinear<number, number> | d3.ScalePoint<string>>
+		scales: Map<string, d3.ScaleLinear<number, number> | d3.ScalePoint<string>>,
+		records: ParallelRecord[]
 	): string {
 		const points = axes.map((key) => {
 			const x = xScale(key) ?? 0;
 			const scale = scales.get(key)!;
-			const y = getY(key, record, scale);
+			const y = getY(key, record, scale, records);
 			return [x, y] as [number, number];
 		});
 		return d3.line()(points) ?? '';
 	}
 
-	// D3 infrastructure — set up once in onMount
-	let brushSelections = new SvelteMap<AxisKey, [number, number] | null>();
+	// D3 infrastructure
+	let brushSelections = new SvelteMap<string, [number, number] | null>();
 
 	onMount(() => {
 		if (!svgEl || !containerEl) return;
 
-		// ResizeObserver for responsive width
 		const ro = new ResizeObserver((entries) => {
 			const entry = entries[0];
 			if (entry) {
@@ -114,7 +123,6 @@
 		});
 		ro.observe(containerEl);
 
-		// Initial draw
 		setupSVG();
 
 		return () => {
@@ -122,7 +130,6 @@
 		};
 	});
 
-	// Track whether SVG structure has been set up
 	let svgInitialised = false;
 
 	function setupSVG() {
@@ -151,15 +158,13 @@
 		const svg = d3.select(svgEl);
 		const g = svg.select<SVGGElement>('.main-g');
 
-		// Build x scale from current axis order
 		const xScale = d3
 			.scalePoint<string>()
-			.domain(axisOrder as string[])
+			.domain(axisOrder)
 			.range([0, innerWidth])
 			.padding(0);
 
-		// Build per-axis scales
-		const scales = new SvelteMap<AxisKey, d3.ScaleLinear<number, number> | d3.ScalePoint<string>>();
+		const scales = new SvelteMap<string, d3.ScaleLinear<number, number> | d3.ScalePoint<string>>();
 		for (const key of axisOrder) {
 			scales.set(key, buildScale(key, data, innerHeight));
 		}
@@ -181,16 +186,14 @@
 					.attr('stroke-width', 1.5)
 					.attr('stroke-opacity', 0.4)
 					.attr('stroke', (d) => colorScale(d.avg_energy_per_token_j))
-					.attr('d', (d) => buildPath(d, axisOrder, xScale, scales))
+					.attr('d', (d) => buildPath(d, axisOrder, xScale, scales, data))
 					.on('mouseover', function (event: MouseEvent, d: ParallelRecord) {
-						// Dim all, highlight this
 						linesG
 							.selectAll<SVGPathElement, ParallelRecord>('path.pc-line')
 							.attr('stroke-opacity', 0.1)
 							.attr('stroke-width', 1.5);
 						d3.select(this).attr('stroke-opacity', 1.0).attr('stroke-width', 2.5).raise();
 
-						// Tooltip
 						tooltipRecord = d;
 						tooltipVisible = true;
 						updateTooltipPosition(event);
@@ -209,40 +212,35 @@
 			(update) =>
 				update
 					.attr('stroke', (d) => colorScale(d.avg_energy_per_token_j))
-					.attr('d', (d) => buildPath(d, axisOrder, xScale, scales)),
+					.attr('d', (d) => buildPath(d, axisOrder, xScale, scales, data)),
 			(exit) => exit.remove()
 		);
 
 		// ── Axes ─────────────────────────────────────────────────────────────
 		const axesG = g.select<SVGGElement>('.axes-g');
 		const axisGroups = axesG
-			.selectAll<SVGGElement, AxisKey>('.axis-group')
-			.data(axisOrder, (d) => d as string);
+			.selectAll<SVGGElement, string>('.axis-group')
+			.data(axisOrder, (d) => d);
 
 		const axisGroupsEnter = axisGroups
 			.enter()
 			.append('g')
 			.attr('class', (d) => `axis-group axis-${d}`)
-			.attr('transform', (d) => `translate(${xScale(d as string) ?? 0},0)`);
+			.attr('transform', (d) => `translate(${xScale(d) ?? 0},0)`);
 
 		const allAxisGroups = axisGroupsEnter.merge(
-			axisGroups as d3.Selection<SVGGElement, AxisKey, SVGGElement, unknown>
+			axisGroups as d3.Selection<SVGGElement, string, SVGGElement, unknown>
 		);
 
-		// Update transform on existing groups (for drag-reorder)
-		allAxisGroups.attr('transform', (d) => `translate(${xScale(d as string) ?? 0},0)`);
-
-		// Remove old groups not in current order
+		allAxisGroups.attr('transform', (d) => `translate(${xScale(d) ?? 0},0)`);
 		axisGroups.exit().remove();
 
-		// Draw axis line + ticks for each group
 		allAxisGroups.each(function (key) {
-			const ag = d3.select<SVGGElement, AxisKey>(this);
+			const ag = d3.select<SVGGElement, string>(this);
 			ag.selectAll('*').remove();
 
 			const scale = scales.get(key)!;
 
-			// Axis line
 			ag.append('line')
 				.attr('class', 'axis-line')
 				.attr('y1', 0)
@@ -250,8 +248,7 @@
 				.attr('stroke', 'var(--color-text-muted)')
 				.attr('stroke-width', 1);
 
-			// Ticks
-			if (key === 'batch_size' || key === 'avg_energy_per_token_j') {
+			if (isNumericAxis(key, data)) {
 				const linScale = scale as d3.ScaleLinear<number, number>;
 				const ticks = linScale.ticks(5);
 				ticks.forEach((t) => {
@@ -307,34 +304,31 @@
 				.attr('font-weight', 'var(--weight-bold)')
 				.attr('fill', 'var(--color-text)')
 				.attr('cursor', 'grab')
-				.text(AXIS_LABELS[key]);
+				.text(getAxisLabel(key));
 
 			// Drag-reorder on label
 			let dragStartX = 0;
-			let dragStartOrder: AxisKey[] = [];
+			let dragStartOrder: string[] = [];
 
 			const drag = d3
-				.drag<SVGTextElement, AxisKey>()
+				.drag<SVGTextElement, string>()
 				.on('start', function (_event) {
-					dragStartX = xScale(key as string) ?? 0;
+					dragStartX = xScale(key) ?? 0;
 					dragStartOrder = [...axisOrder];
 					d3.select(this).attr('cursor', 'grabbing');
 				})
 				.on('drag', function (event) {
-					const currentX = dragStartX + event.x - (xScale(key as string) ?? 0) + event.x;
-					// Move axis group while dragging
+					const currentX = dragStartX + event.x - (xScale(key) ?? 0) + event.x;
 					ag.attr('transform', `translate(${dragStartX + event.x},0)`);
 
-					// Determine new order by comparing drag position to other axis positions
 					const newOrder = [...dragStartOrder];
 					const draggedIdx = newOrder.indexOf(key);
 					const targetX = dragStartX + event.x;
 
-					// Find insertion position
 					let insertIdx = draggedIdx;
 					for (let i = 0; i < newOrder.length; i++) {
 						if (i === draggedIdx) continue;
-						const otherX = xScale(newOrder[i] as string) ?? 0;
+						const otherX = xScale(newOrder[i]) ?? 0;
 						if (i < draggedIdx && targetX < otherX + xScale.step() / 2) {
 							insertIdx = i;
 							break;
@@ -347,20 +341,18 @@
 						newOrder.splice(draggedIdx, 1);
 						newOrder.splice(insertIdx, 0, key);
 					}
-					void currentX; // suppress unused var warning
+					void currentX;
 				})
 				.on('end', function (event) {
 					d3.select(this).attr('cursor', 'grab');
 
-					// Compute final insertion position
 					const targetX = dragStartX + event.x;
 					const newOrder = [...dragStartOrder];
 					const draggedIdx = newOrder.indexOf(key);
 
-					// Build sorted list of (key, xPos) for non-dragged items
 					const others = newOrder
 						.filter((k) => k !== key)
-						.map((k) => ({ key: k, x: xScale(k as string) ?? 0 }));
+						.map((k) => ({ key: k, x: xScale(k) ?? 0 }));
 
 					let insertIdx = 0;
 					for (let i = 0; i < others.length; i++) {
@@ -371,14 +363,13 @@
 					newOrder.splice(insertIdx, 0, key);
 					axisOrder = newOrder;
 
-					// Trigger redraw
 					setupSVG();
 				});
 
 			label.call(drag);
 
 			// ── Brush on numeric axes ─────────────────────────────────────────
-			if (key === 'batch_size' || key === 'avg_energy_per_token_j') {
+			if (isNumericAxis(key, data)) {
 				const linScale = scale as d3.ScaleLinear<number, number>;
 
 				const brush = d3
@@ -389,20 +380,17 @@
 					])
 					.on('brush end', function (event) {
 						if (!event.selection) {
-							// Brush cleared
 							brushSelections.set(key, null);
 						} else {
 							const [py0, py1] = event.selection as [number, number];
-							const lo = linScale.invert(py1); // py1 > py0 in pixel space = lower domain val
+							const lo = linScale.invert(py1);
 							const hi = linScale.invert(py0);
 							brushSelections.set(key, [lo, hi]);
 						}
 
 						const energySel = brushSelections.get('avg_energy_per_token_j') ?? null;
-						const batchSel = brushSelections.get('batch_size') ?? null;
 						onBrush({
-							energyRange: energySel,
-							batchRange: batchSel
+							energyRange: energySel
 						});
 					});
 
@@ -415,7 +403,6 @@
 					>
 				).call(brush);
 
-				// Style brush selection rect
 				ag.select<SVGGElement>('.brush')
 					.select('.selection')
 					.attr('fill', 'var(--color-primary)')
@@ -426,13 +413,10 @@
 		});
 	}
 
-	// Update lines when data prop changes (without re-creating brushes)
+	// Update lines when data prop changes
 	$effect(() => {
-		// Access data to register dependency
 		const _d = data;
 		if (svgInitialised && svgEl) {
-			// Re-setup the entire SVG when data changes since scales and lines both depend on data
-			// This is safe because brushes are cleared when data changes (filter was applied externally)
 			setupSVG();
 		}
 		void _d;
@@ -455,9 +439,7 @@
 		let x = event.clientX - rect.left + 12;
 		let y = event.clientY - rect.top - 10;
 
-		// Flip near right edge
 		if (x + 220 > rect.width) x = event.clientX - rect.left - 230;
-		// Flip near bottom edge
 		if (y + 120 > rect.height) y = event.clientY - rect.top - 130;
 
 		tooltipX = x;
@@ -472,27 +454,20 @@
 		{width}
 		{height}
 		role="img"
-		aria-label="Parallel coordinates chart: five vertical axes arranged left to right represent precision, batch size, backend, attention implementation, and energy per token. Each model configuration is drawn as a polyline crossing all axes. Lines are coloured blue-to-red by energy per token — blue lines are efficient configurations and red lines are wasteful. Brushing numeric axes filters the visible configurations."
+		aria-label="Parallel coordinates chart: vertical axes represent configuration dimensions and energy per token. Each configuration is drawn as a polyline crossing all axes. Lines are coloured blue-to-red by energy per token. Brushing numeric axes filters the visible configurations."
 	></svg>
 
 	{#if tooltipVisible && tooltipRecord}
 		<div class="pc-tooltip" style="left: {tooltipX}px; top: {tooltipY}px;" aria-live="polite">
-			<div class="pc-tooltip__row pc-tooltip__row--header">
-				<span class="pc-tooltip__label">Backend</span>
-				<span class="pc-tooltip__value">{tooltipRecord.backend}</span>
-			</div>
-			<div class="pc-tooltip__row">
-				<span class="pc-tooltip__label">Precision</span>
-				<span class="pc-tooltip__value">{tooltipRecord.precision}</span>
-			</div>
-			<div class="pc-tooltip__row">
-				<span class="pc-tooltip__label">Batch size</span>
-				<span class="pc-tooltip__value">{tooltipRecord.batch_size}</span>
-			</div>
-			<div class="pc-tooltip__row">
-				<span class="pc-tooltip__label">Attention</span>
-				<span class="pc-tooltip__value">{tooltipRecord.attn_implementation}</span>
-			</div>
+			{#each Object.entries(tooltipRecord.dimensions) as [key, value], i (key)}
+				<div
+					class="pc-tooltip__row"
+					class:pc-tooltip__row--header={i === 0}
+				>
+					<span class="pc-tooltip__label">{getDimensionLabel(key)}</span>
+					<span class="pc-tooltip__value">{formatDimensionValue(key, value)}</span>
+				</div>
+			{/each}
 			<div class="pc-tooltip__row pc-tooltip__row--energy">
 				<span class="pc-tooltip__label">Energy/token</span>
 				<span class="pc-tooltip__value pc-tooltip__value--energy">

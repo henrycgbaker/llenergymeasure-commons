@@ -1,108 +1,78 @@
 <script lang="ts">
-	import type { ExplorerFilterState } from '$lib/data/types.js';
+	import type { DimensionValue, ExperimentResult, ExplorerFilterState } from '$lib/data/types.js';
+	import {
+		getAvailableDimensions,
+		getDimensionLabel,
+		getDimensionValues,
+		formatDimensionValue,
+		sortDimensionValues
+	} from '$lib/data/dimensions.js';
 
 	interface Props {
+		allResults: ExperimentResult[];
 		filterState: ExplorerFilterState;
-		onFilterChange: (_partial: Partial<ExplorerFilterState>) => void;
+		onFilterChange: (_key: string, _value: DimensionValue | null) => void;
 	}
 
-	const { filterState, onFilterChange }: Props = $props();
+	const { allResults, filterState, onFilterChange }: Props = $props();
 
-	const backends = [
-		{ value: null, label: 'All' },
-		{ value: 'pytorch', label: 'PyTorch' },
-		{ value: 'vllm', label: 'vLLM' },
-		{ value: 'tensorrt', label: 'TensorRT' }
-	];
+	// Currently selected backend (if any) drives which dimensions to show
+	const selectedBackend = $derived(
+		filterState.dimensionFilters.backend as string | null ?? null
+	);
 
-	const attentions = [
-		{ value: null, label: 'All' },
-		{ value: 'eager', label: 'Eager' },
-		{ value: 'sdpa', label: 'SDPA' },
-		{ value: 'flash_attention_2', label: 'Flash v2' }
-	];
+	// Common dimensions (present for all backends)
+	const commonDims = $derived(['backend', 'precision']);
 
-	const precisions = [
-		{ value: null, label: 'All' },
-		{ value: 'fp16', label: 'FP16' },
-		{ value: 'bf16', label: 'BF16' },
-		{ value: 'fp32', label: 'FP32' }
-	];
+	// Backend-specific dimensions (shown when a backend is selected)
+	const backendDims = $derived(
+		selectedBackend
+			? getAvailableDimensions(allResults, selectedBackend).filter(
+					(k) => !commonDims.includes(k)
+				)
+			: []
+	);
 
-	const batchSizes = [
-		{ value: null, label: 'All' },
-		{ value: 1, label: '1' },
-		{ value: 8, label: '8' },
-		{ value: 32, label: '32' },
-		{ value: 64, label: '64' },
-		{ value: 128, label: '128' }
-	];
+	const allDimsToShow = $derived([...commonDims, ...backendDims]);
+
+	function getOptions(dim: string) {
+		const subset = selectedBackend && !commonDims.includes(dim)
+			? allResults.filter((r) => r.backend === selectedBackend)
+			: allResults;
+		const rawValues = getDimensionValues(subset, dim);
+		const sorted = sortDimensionValues(rawValues);
+		return [
+			{ value: null, label: 'All' },
+			...sorted.map((v) => ({
+				value: v,
+				label: formatDimensionValue(dim, v)
+			}))
+		];
+	}
 </script>
 
 <div class="filters" role="group" aria-label="Explorer filters">
-	<div class="filter-group">
-		<span class="filter-group__label" id="explorer-backend-label">Backend</span>
-		<div class="segment-group" role="radiogroup" aria-labelledby="explorer-backend-label">
-			{#each backends as opt (String(opt.value))}
-				<button
-					class="segment-btn"
-					class:segment-btn--active={filterState.backend === opt.value}
-					role="radio"
-					aria-checked={filterState.backend === opt.value}
-					onclick={() => onFilterChange({ backend: opt.value })}
-					type="button">{opt.label}</button
-				>
-			{/each}
+	{#each allDimsToShow as dim (dim)}
+		{@const options = getOptions(dim)}
+		{@const labelId = `explorer-${dim}-label`}
+		<div class="filter-group">
+			<span class="filter-group__label" id={labelId}>{getDimensionLabel(dim)}</span>
+			<div class="segment-group" role="radiogroup" aria-labelledby={labelId}>
+				{#each options as opt (String(opt.value))}
+					<button
+						class="segment-btn"
+						class:segment-btn--active={filterState.dimensionFilters[dim] === opt.value ||
+							(opt.value === null && filterState.dimensionFilters[dim] == null)}
+						role="radio"
+						aria-checked={filterState.dimensionFilters[dim] === opt.value ||
+							(opt.value === null && filterState.dimensionFilters[dim] == null)}
+						onclick={() => onFilterChange(dim, opt.value)}
+						type="button">{opt.label}</button
+					>
+				{/each}
+			</div>
 		</div>
-	</div>
-
-	<div class="filter-group">
-		<span class="filter-group__label" id="explorer-attn-label">Attention</span>
-		<div class="segment-group" role="radiogroup" aria-labelledby="explorer-attn-label">
-			{#each attentions as opt (String(opt.value))}
-				<button
-					class="segment-btn"
-					class:segment-btn--active={filterState.attn === opt.value}
-					role="radio"
-					aria-checked={filterState.attn === opt.value}
-					onclick={() => onFilterChange({ attn: opt.value })}
-					type="button">{opt.label}</button
-				>
-			{/each}
-		</div>
-	</div>
-
-	<div class="filter-group">
-		<span class="filter-group__label" id="explorer-precision-label">Precision</span>
-		<div class="segment-group" role="radiogroup" aria-labelledby="explorer-precision-label">
-			{#each precisions as opt (String(opt.value))}
-				<button
-					class="segment-btn"
-					class:segment-btn--active={filterState.precision === opt.value}
-					role="radio"
-					aria-checked={filterState.precision === opt.value}
-					onclick={() => onFilterChange({ precision: opt.value })}
-					type="button">{opt.label}</button
-				>
-			{/each}
-		</div>
-	</div>
-
-	<div class="filter-group">
-		<span class="filter-group__label" id="explorer-batch-label">Batch Size</span>
-		<div class="segment-group" role="radiogroup" aria-labelledby="explorer-batch-label">
-			{#each batchSizes as opt (String(opt.value))}
-				<button
-					class="segment-btn"
-					class:segment-btn--active={filterState.batchSize === opt.value}
-					role="radio"
-					aria-checked={filterState.batchSize === opt.value}
-					onclick={() => onFilterChange({ batchSize: opt.value })}
-					type="button">{opt.label}</button
-				>
-			{/each}
-		</div>
-	</div>
+	{/each}
 </div>
 
 <style>

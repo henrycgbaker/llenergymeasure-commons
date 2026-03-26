@@ -3,11 +3,13 @@ import { toSurfaceGrid } from '../surfaceData.js';
 import type { ExperimentResult } from '../../types.js';
 import fixtureData from '../../../../../static/data/fixture-results.json';
 
-const fixtures = fixtureData as ExperimentResult[];
+const fixtures = fixtureData as unknown as ExperimentResult[];
 
 describe('toSurfaceGrid', () => {
 	it('returns correct shape for precision x batch_size axes', () => {
-		const grid = toSurfaceGrid(fixtures, 'precision', 'batch_size');
+		// Filter to pytorch only (which has batch_size)
+		const pytorch = fixtures.filter((r) => r.backend === 'pytorch');
+		const grid = toSurfaceGrid(pytorch, 'precision', 'batch_size');
 		expect(grid).toHaveProperty('x');
 		expect(grid).toHaveProperty('y');
 		expect(grid).toHaveProperty('z');
@@ -21,7 +23,8 @@ describe('toSurfaceGrid', () => {
 	});
 
 	it('z-array dimensions are [y.length][x.length]', () => {
-		const grid = toSurfaceGrid(fixtures, 'precision', 'batch_size');
+		const pytorch = fixtures.filter((r) => r.backend === 'pytorch');
+		const grid = toSurfaceGrid(pytorch, 'precision', 'batch_size');
 		expect(grid.z.length).toBe(grid.y.length);
 		for (const row of grid.z) {
 			expect(row.length).toBe(grid.x.length);
@@ -29,9 +32,7 @@ describe('toSurfaceGrid', () => {
 	});
 
 	it('multiple records mapping to same cell are averaged', () => {
-		// Use a pair where we know there are multiple records per cell
 		const grid = toSurfaceGrid(fixtures, 'precision', 'backend');
-		// Every z-value must be a finite number
 		for (const row of grid.z) {
 			for (const val of row) {
 				expect(typeof val).toBe('number');
@@ -42,8 +43,8 @@ describe('toSurfaceGrid', () => {
 	});
 
 	it('missing cells filled with mean (neutral interpolation)', () => {
-		// All cells should have valid numeric values — no NaN or undefined
-		const grid = toSurfaceGrid(fixtures, 'precision', 'batch_size');
+		const pytorch = fixtures.filter((r) => r.backend === 'pytorch');
+		const grid = toSurfaceGrid(pytorch, 'precision', 'batch_size');
 		for (const row of grid.z) {
 			for (const val of row) {
 				expect(val).not.toBeNaN();
@@ -62,8 +63,9 @@ describe('toSurfaceGrid', () => {
 		}
 	});
 
-	it('works for batch_size x backend axes', () => {
-		const grid = toSurfaceGrid(fixtures, 'batch_size', 'backend');
+	it('works for vllm-specific axes (enforce_eager x max_num_seqs)', () => {
+		const vllm = fixtures.filter((r) => r.backend === 'vllm');
+		const grid = toSurfaceGrid(vllm, 'enforce_eager', 'max_num_seqs');
 		expect(grid.x.length).toBeGreaterThan(0);
 		expect(grid.y.length).toBeGreaterThan(0);
 		expect(grid.z.length).toBe(grid.y.length);
