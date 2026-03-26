@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-distribution-polish plan 03 (chart accessibility, keyboard navigation, colourblind verification)
-last_updated: "2026-03-26T01:05:14.875Z"
+stopped_at: Completed 04-distribution-polish plan 02 (permalink routes, embed pages, distribution components)
+last_updated: "2026-03-26T01:08:24.651Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 20
 ---
 
@@ -61,6 +61,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 03-explorer-advanced-visualisations P03 | 9 | 2 tasks | 5 files |
 | Phase 04-distribution-polish P01 | 6 | 2 tasks | 8 files |
 | Phase 04-distribution-polish P03 | 22 | 2 tasks | 9 files |
+| Phase 04-distribution-polish P02 | 13 | 3 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 04-distribution-polish]: role=grid applied to heatmap SVG only when interactive=true; non-interactive usage keeps role=img
 - [Phase 04-distribution-polish]: focusedCell tracked as indices not HeatmapCell reference to avoid stale refs when cells re-derive
 - [Phase 04-distribution-polish]: Text contrast in heatmap: middle 35% energy range uses dark text, extremes use white text
+- [Phase 04-distribution-polish]: Export wrapper div (title + chart + attribution) used for ALL chart types via html-to-image — simplest approach avoiding need to expose Plotly internal refs via bindable props
+- [Phase 04-distribution-polish]: OG images generated at content-generation time via sharp SVG-to-PNG, committed as static assets to platform/static/og/
 
 ### Pending Todos
 
@@ -121,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T01:05:14.871Z
-Stopped at: Completed 04-distribution-polish plan 03 (chart accessibility, keyboard navigation, colourblind verification)
+Last session: 2026-03-26T01:08:24.647Z
+Stopped at: Completed 04-distribution-polish plan 02 (permalink routes, embed pages, distribution components)
 Resume file: None

@@ -42,7 +42,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Distribution
 
 - [x] **DIST-01**: Every chart has a stable permalink URL
-- [ ] **DIST-02**: User can copy iframe embed code for any chart
+- [x] **DIST-02**: User can copy iframe embed code for any chart
 - [x] **DIST-03**: User can download any chart as PNG or SVG
 - [x] **DIST-04**: User can copy a BibTeX or APA citation for the platform and individual charts
 
@@ -112,7 +112,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-07 | Phase 3 | Complete |
 | DATA-08 | Phase 1 | Complete |
 | DIST-01 | Phase 4 | Complete |
-| DIST-02 | Phase 4 | Pending |
+| DIST-02 | Phase 4 | Complete |
 | DIST-03 | Phase 4 | Complete |
 | DIST-04 | Phase 4 | Complete |
 | DESG-01 | Phase 2 | Complete |
