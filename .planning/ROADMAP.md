@@ -112,7 +112,7 @@ source in a report without contacting the authors.
   3. A user can download any chart as a PNG or SVG file from a control on the chart itself.
   4. All charts use colourblind-safe palettes, every chart has descriptive alt text, and
      all interactive controls are reachable and operable by keyboard alone.
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 04-01-PLAN.md -- Chart metadata registry, citation generation, image export utilities (TDD)
@@ -129,4 +129,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Foundation | 2/2 | Complete   | 2026-03-20 |
 | 2. Scroll Narrative | 4/5 | In Progress|  |
 | 3. Explorer + Advanced Visualisations | 4/4 | Complete   | 2026-03-25 |
-| 4. Distribution + Polish | 0/3 | Not started | - |
+| 4. Distribution + Polish | 1/3 | In Progress|  |

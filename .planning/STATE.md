@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-03-PLAN.md (3D Surface and PCA Projection charts)
-last_updated: "2026-03-25T23:52:54.939Z"
+stopped_at: Completed 04-distribution-polish plan 01 (chart meta, citations, export utilities)
+last_updated: "2026-03-26T00:51:49.663Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
   percent: 20
 ---
 
@@ -59,6 +59,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 03-explorer-advanced-visualisations P01 | 4 | 2 tasks | 11 files |
 | Phase 03-explorer-advanced-visualisations P02 | 5 | 2 tasks | 5 files |
 | Phase 03-explorer-advanced-visualisations P03 | 9 | 2 tasks | 5 files |
+| Phase 04-distribution-polish P01 | 6 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,9 @@ Recent decisions affecting current work:
 - [Phase 03-explorer-advanced-visualisations]: plotDiv declared as $state<HTMLDivElement | undefined> in Svelte 5 for reactive bind:this bindings
 - [Phase 03-explorer-advanced-visualisations]: Plotly typed as unknown with getPlotly() cast helper — no @types package, avoid eslint any in Svelte files
 - [Phase 03-explorer-advanced-visualisations]: Tab switching uses {#if} not display:none so Plotly.purge fires on destroy — prevents WebGL context exhaustion
+- [Phase 04-distribution-polish]: CHART_SLUGS is a const tuple (not enum) so TypeScript infers ChartSlug union type automatically
+- [Phase 04-distribution-polish]: exportPlotlyPng canvas layout: 60px title + 800px Plotly + 40px attribution = 900px total at 1200px width
+- [Phase 04-distribution-polish]: VITE_DATASET_HASH ?? 'dev' fallback makes citations work in all environments without env var setup
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-25T23:52:54.936Z
-Stopped at: Completed 03-03-PLAN.md (3D Surface and PCA Projection charts)
+Last session: 2026-03-26T00:51:49.658Z
+Stopped at: Completed 04-distribution-polish plan 01 (chart meta, citations, export utilities)
 Resume file: None

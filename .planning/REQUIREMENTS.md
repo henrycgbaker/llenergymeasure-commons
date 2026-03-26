@@ -41,17 +41,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Distribution
 
-- [ ] **DIST-01**: Every chart has a stable permalink URL
+- [x] **DIST-01**: Every chart has a stable permalink URL
 - [ ] **DIST-02**: User can copy iframe embed code for any chart
-- [ ] **DIST-03**: User can download any chart as PNG or SVG
-- [ ] **DIST-04**: User can copy a BibTeX or APA citation for the platform and individual charts
+- [x] **DIST-03**: User can download any chart as PNG or SVG
+- [x] **DIST-04**: User can copy a BibTeX or APA citation for the platform and individual charts
 
 ### Design & Accessibility
 
 - [x] **DESG-01**: Site is responsive across desktop, tablet, and mobile
 - [x] **DESG-02**: Scrollytelling narrative works on touch devices
 - [ ] **DESG-03**: All charts use colourblind-safe palettes (no red/green encoding)
-- [ ] **DESG-04**: Every chart has descriptive alt text
+- [x] **DESG-04**: Every chart has descriptive alt text
 - [ ] **DESG-05**: Interactive elements are keyboard-navigable
 
 ## v2 Requirements
@@ -111,14 +111,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-06 | Phase 3 | Complete |
 | DATA-07 | Phase 3 | Complete |
 | DATA-08 | Phase 1 | Complete |
-| DIST-01 | Phase 4 | Pending |
+| DIST-01 | Phase 4 | Complete |
 | DIST-02 | Phase 4 | Pending |
-| DIST-03 | Phase 4 | Pending |
-| DIST-04 | Phase 4 | Pending |
+| DIST-03 | Phase 4 | Complete |
+| DIST-04 | Phase 4 | Complete |
 | DESG-01 | Phase 2 | Complete |
 | DESG-02 | Phase 2 | Complete |
 | DESG-03 | Phase 4 | Pending |
-| DESG-04 | Phase 4 | Pending |
+| DESG-04 | Phase 4 | Complete |
 | DESG-05 | Phase 4 | Pending |
 
 **Coverage:**
