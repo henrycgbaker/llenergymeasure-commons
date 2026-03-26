@@ -19,6 +19,7 @@
 		// Interactive callbacks
 		onCellHover?: (_cell: HeatmapCell | null, _x: number, _y: number) => void;
 		onCellClick?: (_cell: HeatmapCell) => void;
+		onCellFocus?: (_cell: HeatmapCell | null) => void;
 		// Zoom reset trigger (increment to reset zoom externally)
 		zoomResetTrigger?: number;
 	}
@@ -33,6 +34,7 @@
 		metric = 'energy',
 		onCellHover,
 		onCellClick,
+		onCellFocus,
 		zoomResetTrigger = 0
 	}: Props = $props();
 
@@ -167,6 +169,85 @@
 		}
 	}
 
+	// ── Keyboard grid navigation ────────────────────────────────────────────
+	let focusedCell = $state<{ precisionIdx: number; batchIdx: number } | null>(null);
+
+	// Derived: focused cell id for aria-activedescendant
+	const focusedCellId = $derived(
+		focusedCell ? `cell-${focusedCell.precisionIdx}-${focusedCell.batchIdx}` : undefined
+	);
+
+	// Lookup HeatmapCell by grid indices
+	function getCellByIndices(pIdx: number, bIdx: number): HeatmapCell | null {
+		const p = precisions[pIdx];
+		const b = batchSizes[bIdx];
+		if (!p || !b) return null;
+		return cells.find((c) => c.precision === p && c.batch_size === Number(b)) ?? null;
+	}
+
+	function handleKeyNavigation(event: KeyboardEvent) {
+		if (!interactive) return;
+
+		const pLen = precisions.length;
+		const bLen = batchSizes.length;
+
+		// Initialise focus to first cell if none focused
+		if (!focusedCell) {
+			if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+				event.preventDefault();
+				focusedCell = { precisionIdx: 0, batchIdx: 0 };
+				onCellFocus?.(getCellByIndices(0, 0));
+			}
+			return;
+		}
+
+		let { precisionIdx, batchIdx } = focusedCell;
+
+		switch (event.key) {
+			case 'ArrowRight':
+				event.preventDefault();
+				precisionIdx = Math.min(precisionIdx + 1, pLen - 1);
+				break;
+			case 'ArrowLeft':
+				event.preventDefault();
+				precisionIdx = Math.max(precisionIdx - 1, 0);
+				break;
+			case 'ArrowDown':
+				event.preventDefault();
+				batchIdx = Math.min(batchIdx + 1, bLen - 1);
+				break;
+			case 'ArrowUp':
+				event.preventDefault();
+				batchIdx = Math.max(batchIdx - 1, 0);
+				break;
+			case 'Enter':
+			case ' ': {
+				event.preventDefault();
+				const cell = getCellByIndices(precisionIdx, batchIdx);
+				if (cell) onCellClick?.(cell);
+				return;
+			}
+			case 'Escape':
+				event.preventDefault();
+				focusedCell = null;
+				onCellFocus?.(null);
+				return;
+			default:
+				return;
+		}
+
+		focusedCell = { precisionIdx, batchIdx };
+		onCellFocus?.(getCellByIndices(precisionIdx, batchIdx));
+	}
+
+	function isFocusedCell(cell: HeatmapCell): boolean {
+		if (!focusedCell) return false;
+		return (
+			precisions[focusedCell.precisionIdx] === cell.precision &&
+			batchSizes[focusedCell.batchIdx] === String(cell.batch_size)
+		);
+	}
+
 	// ── Interactive handlers ────────────────────────────────────────────────
 	function handleCellMouseover(event: MouseEvent, cell: HeatmapCell) {
 		if (!interactive) return;
@@ -275,8 +356,11 @@
 		{height}
 		class="heatmap-svg"
 		class:heatmap-svg--interactive={interactive}
-		role="img"
+		role={interactive ? 'grid' : 'img'}
 		aria-label="Configuration energy heatmap: grid of precision (fp32, fp16, bf16, int8) on the x-axis versus batch size on the y-axis. Cells are coloured on a blue-to-red diverging scale — deep blue indicates the most energy-efficient configurations and deep red indicates the most wasteful. Numeric energy values are shown in each cell in joules per token."
+		tabindex={interactive ? 0 : undefined}
+		aria-activedescendant={interactive ? focusedCellId : undefined}
+		onkeydown={interactive ? handleKeyNavigation : undefined}
 	>
 		<g transform="translate({MARGIN.left},{MARGIN.top})">
 			<!-- Zoom group: receives d3 transform -->
@@ -294,25 +378,26 @@
 					{@const isBest =
 						cell.precision === bestCell?.precision && cell.batch_size === bestCell?.batch_size}
 					{@const isSelected = isSelectedCell(cell)}
+					{@const isFocused = interactive && isFocusedCell(cell)}
 					{@const revealOrder = sortedCells.findIndex(
 						(c) => c.precision === cell.precision && c.batch_size === cell.batch_size
 					)}
+					{@const precisionIdx = precisions.indexOf(cell.precision)}
+					{@const batchIdx = batchSizes.indexOf(String(cell.batch_size))}
 					<g
 						class="cell-group"
 						class:cell-group--interactive={interactive}
-						role={interactive ? 'button' : undefined}
-						tabindex={interactive ? 0 : undefined}
+						id={interactive ? `cell-${precisionIdx}-${batchIdx}` : undefined}
+						role={interactive ? 'gridcell' : undefined}
+						aria-rowindex={interactive ? batchIdx + 1 : undefined}
+						aria-colindex={interactive ? precisionIdx + 1 : undefined}
+						aria-selected={interactive ? isSelected : undefined}
 						aria-label={interactive
 							? `${cell.label}: ${cell.energy.toFixed(4)} J/token`
 							: undefined}
 						onmouseover={interactive ? (e) => handleCellMouseover(e, cell) : undefined}
 						onmouseout={interactive ? handleCellMouseout : undefined}
 						onclick={interactive ? () => handleCellClick(cell) : undefined}
-						onkeydown={interactive
-							? (e) => {
-									if (e.key === 'Enter' || e.key === ' ') handleCellClick(cell);
-								}
-							: undefined}
 						ontouchstart={interactive ? (e) => handleCellTouchstart(e, cell) : undefined}
 					>
 						<rect
@@ -367,6 +452,20 @@
 								pointer-events="none"
 								style="opacity: {isVisible ? 1 : 0}; transition: opacity 200ms ease {revealOrder * 30}ms;"
 							>{formatCellValue(cell)}</text>
+						{/if}
+						<!-- Keyboard focus ring overlay -->
+						{#if isFocused}
+							<rect
+								{x}
+								{y}
+								width={w}
+								height={h}
+								fill="none"
+								stroke="var(--color-primary)"
+								stroke-width="2"
+								rx="2"
+								pointer-events="none"
+							/>
 						{/if}
 					</g>
 				{/each}
@@ -467,5 +566,17 @@
 	.zoom-reset-btn:hover {
 		background: var(--color-bg);
 		color: var(--color-primary);
+	}
+
+	.zoom-reset-btn:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+
+	/* Focus ring on the interactive SVG grid when keyboard-navigated */
+	.heatmap-svg--interactive:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+		border-radius: var(--radius-sm);
 	}
 </style>

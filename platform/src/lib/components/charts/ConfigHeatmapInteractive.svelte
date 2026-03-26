@@ -24,6 +24,16 @@
 	let tooltipX = $state(0);
 	let tooltipY = $state(0);
 	let selectedCell = $state<HeatmapCell | null>(null);
+	let keyboardFocusedCell = $state<HeatmapCell | null>(null);
+
+	// ── Screen reader live region ────────────────────────────────────────────
+	// Updated when keyboard focus moves between cells
+	const liveAnnouncement = $derived.by(() => {
+		const cell = keyboardFocusedCell;
+		if (!cell) return '';
+		const ratio = cell.ratioVsBest.toFixed(2);
+		return `${cell.label}: ${cell.energy.toFixed(4)} joules per token, ${ratio}x versus optimal`;
+	});
 
 	// Zoom reset: increment to signal ConfigHeatmap to reset zoom
 	let zoomResetTrigger = $state(0);
@@ -69,6 +79,18 @@
 		tooltipY = y;
 	}
 
+	function handleCellFocus(cell: HeatmapCell | null) {
+		keyboardFocusedCell = cell;
+		// Also show tooltip for keyboard-focused cell at a fixed position below the chart header
+		if (cell) {
+			hoveredCell = cell;
+			tooltipX = 12;
+			tooltipY = 12;
+		} else {
+			hoveredCell = null;
+		}
+	}
+
 	function handleCellClick(cell: HeatmapCell) {
 		// Toggle: clicking selected cell deselects it
 		selectedCell =
@@ -79,6 +101,9 @@
 </script>
 
 <div class="interactive-heatmap" bind:this={containerEl}>
+	<!-- Screen reader live region: announces keyboard-focused cell details -->
+	<div class="sr-only" aria-live="polite" aria-atomic="true">{liveAnnouncement}</div>
+
 	<!-- Filter controls -->
 	<HeatmapFilters
 		{selectedBackend}
@@ -100,6 +125,7 @@
 				metric={selectedMetric}
 				onCellHover={handleCellHover}
 				onCellClick={handleCellClick}
+				onCellFocus={handleCellFocus}
 				{zoomResetTrigger}
 				width={Math.min(containerWidth, 700)}
 				height={420}
@@ -148,6 +174,19 @@
 </div>
 
 <style>
+	/* Visually hidden but accessible to screen readers */
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border-width: 0;
+	}
+
 	.interactive-heatmap {
 		display: flex;
 		flex-direction: column;

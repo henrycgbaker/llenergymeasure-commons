@@ -83,7 +83,13 @@
 
 	<ExplorerTabs {activeTab} onTabChange={handleTabChange} />
 
-	<div class="chart-area">
+	<div
+		class="chart-area"
+		role="tabpanel"
+		id="tabpanel-{activeTab}"
+		aria-labelledby="tab-{activeTab}"
+		tabindex="0"
+	>
 		{#if activeTab === 'surface'}
 			<Surface3D results={filteredResults} />
 		{:else if activeTab === 'pca'}
@@ -210,6 +216,17 @@
 	.full-dl-btn:hover {
 		background: var(--color-primary);
 		color: var(--color-surface);
+	}
+
+	.full-dl-btn:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+
+	.chart-area:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+		border-radius: var(--radius-sm);
 	}
 
 	@media (max-width: 600px) {
