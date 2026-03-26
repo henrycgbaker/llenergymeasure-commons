@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { base } from '$app/paths';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ConfigHeatmapInteractive from '$lib/components/charts/ConfigHeatmapInteractive.svelte';
@@ -63,12 +62,12 @@
 	}
 
 	function syncFilterToUrl() {
-		const params = new URLSearchParams();
-		if (filterState.backend) params.set('backend', filterState.backend);
-		if (filterState.attn) params.set('attn', filterState.attn);
-		if (filterState.precision) params.set('precision', filterState.precision);
-		if (filterState.batchSize !== null) params.set('batchSize', String(filterState.batchSize));
-		const qs = params.toString();
+		const parts: string[] = [];
+		if (filterState.backend) parts.push(`backend=${encodeURIComponent(filterState.backend)}`);
+		if (filterState.attn) parts.push(`attn=${encodeURIComponent(filterState.attn)}`);
+		if (filterState.precision) parts.push(`precision=${encodeURIComponent(filterState.precision)}`);
+		if (filterState.batchSize !== null) parts.push(`batchSize=${filterState.batchSize}`);
+		const qs = parts.join('&');
 		history.replaceState(null, '', qs ? `?${qs}` : window.location.pathname);
 	}
 

@@ -199,6 +199,7 @@
 	<!-- ========================================================
 	     Beat 2: Reveal — progressive heatmap
 	     ======================================================== -->
+	<span id="heatmap" aria-hidden="true"></span>
 	<div bind:this={beat2El}>
 		<NarrativeSection id="beat-2">
 			{#snippet graphic()}
@@ -285,6 +286,7 @@
 	<!-- ========================================================
 	     Beat 4: Depth — animated power timeseries
 	     ======================================================== -->
+	<span id="timeseries" aria-hidden="true"></span>
 	<div bind:this={beat4El}>
 		<NarrativeSection id="beat-4">
 			{#snippet graphic()}
