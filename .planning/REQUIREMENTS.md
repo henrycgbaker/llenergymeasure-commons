@@ -50,9 +50,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **DESG-01**: Site is responsive across desktop, tablet, and mobile
 - [x] **DESG-02**: Scrollytelling narrative works on touch devices
-- [ ] **DESG-03**: All charts use colourblind-safe palettes (no red/green encoding)
+- [x] **DESG-03**: All charts use colourblind-safe palettes (no red/green encoding)
 - [x] **DESG-04**: Every chart has descriptive alt text
-- [ ] **DESG-05**: Interactive elements are keyboard-navigable
+- [x] **DESG-05**: Interactive elements are keyboard-navigable
 
 ## v2 Requirements
 
@@ -117,9 +117,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DIST-04 | Phase 4 | Complete |
 | DESG-01 | Phase 2 | Complete |
 | DESG-02 | Phase 2 | Complete |
-| DESG-03 | Phase 4 | Pending |
+| DESG-03 | Phase 4 | Complete |
 | DESG-04 | Phase 4 | Complete |
-| DESG-05 | Phase 4 | Pending |
+| DESG-05 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 32 total

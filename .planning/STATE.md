@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-distribution-polish plan 01 (chart meta, citations, export utilities)
-last_updated: "2026-03-26T00:51:49.663Z"
+stopped_at: Completed 04-distribution-polish plan 03 (chart accessibility, keyboard navigation, colourblind verification)
+last_updated: "2026-03-26T01:05:14.875Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 20
 ---
 
@@ -60,6 +60,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 03-explorer-advanced-visualisations P02 | 5 | 2 tasks | 5 files |
 | Phase 03-explorer-advanced-visualisations P03 | 9 | 2 tasks | 5 files |
 | Phase 04-distribution-polish P01 | 6 | 2 tasks | 8 files |
+| Phase 04-distribution-polish P03 | 22 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Recent decisions affecting current work:
 - [Phase 04-distribution-polish]: CHART_SLUGS is a const tuple (not enum) so TypeScript infers ChartSlug union type automatically
 - [Phase 04-distribution-polish]: exportPlotlyPng canvas layout: 60px title + 800px Plotly + 40px attribution = 900px total at 1200px width
 - [Phase 04-distribution-polish]: VITE_DATASET_HASH ?? 'dev' fallback makes citations work in all environments without env var setup
+- [Phase 04-distribution-polish]: role=grid applied to heatmap SVG only when interactive=true; non-interactive usage keeps role=img
+- [Phase 04-distribution-polish]: focusedCell tracked as indices not HeatmapCell reference to avoid stale refs when cells re-derive
+- [Phase 04-distribution-polish]: Text contrast in heatmap: middle 35% energy range uses dark text, extremes use white text
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T00:51:49.658Z
-Stopped at: Completed 04-distribution-polish plan 01 (chart meta, citations, export utilities)
+Last session: 2026-03-26T01:05:14.871Z
+Stopped at: Completed 04-distribution-polish plan 03 (chart accessibility, keyboard navigation, colourblind verification)
 Resume file: None
