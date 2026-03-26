@@ -173,7 +173,12 @@
 			</select>
 		</label>
 	</div>
-	<div class="chart-container" bind:this={plotDiv}></div>
+	<div
+		class="chart-container"
+		bind:this={plotDiv}
+		role="img"
+		aria-label="3D energy surface plot: two horizontal axes represent configurable dimensions (e.g. precision and batch size) and the vertical axis shows energy consumption in joules per token. The surface is coloured on a blue-to-red scale — blue valleys indicate efficient configurations and red peaks indicate wasteful ones."
+	></div>
 {/if}
 
 <style>

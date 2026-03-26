@@ -471,8 +471,8 @@
 		class="pc-svg"
 		{width}
 		{height}
-		aria-label="Parallel coordinates chart showing configuration dimensions"
 		role="img"
+		aria-label="Parallel coordinates chart: five vertical axes arranged left to right represent precision, batch size, backend, attention implementation, and energy per token. Each model configuration is drawn as a polyline crossing all axes. Lines are coloured blue-to-red by energy per token — blue lines are efficient configurations and red lines are wasteful. Brushing numeric axes filters the visible configurations."
 	></svg>
 
 	{#if tooltipVisible && tooltipRecord}

@@ -273,7 +273,7 @@
 				width={svgWidth}
 				height={SVG_HEIGHT}
 				role="img"
-				aria-label="Power timeseries: {panelTitle(leftConfigId)}"
+				aria-label="Power draw timeseries for {panelTitle(leftConfigId)} ({configSummary(leftResult)}): line chart showing GPU power in watts on the y-axis over a 60-second normalised inference window on the x-axis. The area under the curve represents cumulative energy drawn."
 			>
 				<defs>
 					<clipPath id="left-clip">
@@ -382,7 +382,7 @@
 				width={svgWidth}
 				height={SVG_HEIGHT}
 				role="img"
-				aria-label="Power timeseries: {panelTitle(rightConfigId)}"
+				aria-label="Power draw timeseries for {panelTitle(rightConfigId)} ({configSummary(rightResult)}): line chart showing GPU power in watts on the y-axis over a 60-second normalised inference window on the x-axis. The area under the curve represents cumulative energy drawn."
 			>
 				<defs>
 					<clipPath id="right-clip">

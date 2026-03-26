@@ -1,3 +1,8 @@
+<!-- Colourblind verification (DESG-03): RdBu 5-stop palette (#2166ac, #74add1, #f7f7f7, #f4a582, #d6604d)
+     verified under deuteranopia, protanopia, and tritanopia simulation. Blue and red endpoints remain
+     distinguishable — blue stays blue under all three simulations; red shifts to muted olive/brown under
+     deuteranopia/protanopia but remains visually separable from the blue endpoint. Visible cell values
+     provide a redundant non-colour channel, ensuring the chart communicates without relying solely on colour. -->
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
@@ -231,6 +236,28 @@
 		if (!selectedCell) return false;
 		return cell.precision === selectedCell.precision && cell.batch_size === selectedCell.batch_size;
 	}
+
+	// ── Cell value text colour ───────────────────────────────────────────────
+	// Cells near the extremes (efficient blue / wasteful red) are dark — use white text.
+	// Cells near the neutral midpoint are light — use dark text.
+	// Threshold: cells within the middle 35% of the energy range use dark text.
+	function cellTextColor(cell: HeatmapCell): string {
+		if (maxEnergy === minEnergy) return 'var(--color-text)';
+		const t = (cell.energy - minEnergy) / (maxEnergy - minEnergy); // 0 = efficient, 1 = wasteful
+		const distFromMid = Math.abs(t - 0.5);
+		return distFromMid > 0.175 ? '#ffffff' : 'var(--color-text)';
+	}
+
+	// Format energy value for cell label: 2-4 significant figures
+	function formatCellValue(cell: HeatmapCell): string {
+		if (metric === 'energy') {
+			const v = cell.energy;
+			if (v >= 1) return v.toPrecision(3);
+			if (v >= 0.1) return v.toPrecision(3);
+			return v.toPrecision(2);
+		}
+		return cell.throughput.toFixed(0);
+	}
 </script>
 
 <div class="heatmap-container" style="position: relative;">
@@ -249,7 +276,7 @@
 		class="heatmap-svg"
 		class:heatmap-svg--interactive={interactive}
 		role="img"
-		aria-label="Configuration energy heatmap"
+		aria-label="Configuration energy heatmap: grid of precision (fp32, fp16, bf16, int8) on the x-axis versus batch size on the y-axis. Cells are coloured on a blue-to-red diverging scale — deep blue indicates the most energy-efficient configurations and deep red indicates the most wasteful. Numeric energy values are shown in each cell in joules per token."
 	>
 		<g transform="translate({MARGIN.left},{MARGIN.top})">
 			<!-- Zoom group: receives d3 transform -->
@@ -327,6 +354,19 @@
 								fill="var(--color-energy-wasteful)"
 								font-weight="bold">Worst</text
 							>
+						{/if}
+						<!-- Visible cell value: provides a non-colour channel for greyscale / colourblind readers -->
+						{#if isVisible}
+							<text
+								x={x + w / 2}
+								y={y + h / 2 + 4}
+								text-anchor="middle"
+								dominant-baseline="middle"
+								font-size="10"
+								fill={cellTextColor(cell)}
+								pointer-events="none"
+								style="opacity: {isVisible ? 1 : 0}; transition: opacity 200ms ease {revealOrder * 30}ms;"
+							>{formatCellValue(cell)}</text>
 						{/if}
 					</g>
 				{/each}

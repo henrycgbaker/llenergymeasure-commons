@@ -132,7 +132,12 @@
 		</p>
 	</div>
 {:else}
-	<div class="chart-container" bind:this={plotDiv}></div>
+	<div
+		class="chart-container"
+		bind:this={plotDiv}
+		role="img"
+		aria-label="3D PCA projection scatter plot: each of the 24 model configurations is plotted as a dot in principal component space. The three axes represent PC1, PC2, and PC3 — the top three components explaining configuration variance. Dot colour encodes energy per token on a blue-to-red scale: blue dots are efficient configurations, red dots are wasteful. Dot size encodes throughput. Proximity indicates similar configuration profiles."
+	></div>
 {/if}
 
 <style>
