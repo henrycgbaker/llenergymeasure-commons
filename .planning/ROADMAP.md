@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Explorer + Advanced Visualisations** - Interactive explorer, 3D surface, PCA projection, parallel coordinates (completed 2026-03-25)
 - [x] **Phase 4: Distribution + Polish** - Embeds, citations, data downloads, accessibility and performance audit (completed 2026-03-26)
 - [ ] **Phase 5: Real Data Alignment** - Update narrative copy, methodology page, and types to match real measurement data (gap closure)
-- [ ] **Phase 6: Distribution Bug Fixes** - Fix timeseries permalink, SVG export, and CI verify step (gap closure)
+- [x] **Phase 6: Distribution Bug Fixes** - Fix timeseries permalink, SVG export, and CI verify step (gap closure) (completed 2026-03-27)
 
 ## Phase Details
 
@@ -158,7 +158,10 @@ Plotly charts, and CI build verification path.
   3. The CI verify step checks the correct build output path (build/methodology.html, not
      build/methodology/index.html).
 
-Plans: 0/1 plans
+**Plans:** 1/1 plans complete
+
+Plans:
+- [ ] 06-01-PLAN.md -- Fix timeseries permalink, SVG export button, CI verify path
 
 ## Progress
 
@@ -172,4 +175,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Explorer + Advanced Visualisations | 4/4 | Complete   | 2026-03-25 |
 | 4. Distribution + Polish | 3/3 | Complete   | 2026-03-26 |
 | 5. Real Data Alignment | 0/1 | Pending    |  |
-| 6. Distribution Bug Fixes | 0/1 | Pending    |  |
+| 6. Distribution Bug Fixes | 1/1 | Complete   | 2026-03-27 |

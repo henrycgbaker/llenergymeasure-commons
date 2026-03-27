@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-distribution-polish plan 02 (permalink routes, embed pages, distribution components)
-last_updated: "2026-03-26T01:08:24.651Z"
+stopped_at: Completed 06-distribution-bug-fixes plan 01 (timeseries permalink progress, slug-aware export type)
+last_updated: "2026-03-27T00:30:29.919Z"
 last_activity: 2026-03-20 - Completed plan 01-02 (SvelteKit site scaffold)
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 16
+  completed_plans: 15
   percent: 20
 ---
 
@@ -62,6 +62,7 @@ Progress: [██░░░░░░░░] ~20%
 | Phase 04-distribution-polish P01 | 6 | 2 tasks | 8 files |
 | Phase 04-distribution-polish P03 | 22 | 2 tasks | 9 files |
 | Phase 04-distribution-polish P02 | 13 | 3 tasks | 16 files |
+| Phase 06-distribution-bug-fixes P01 | 8 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Recent decisions affecting current work:
 - [Phase 04-distribution-polish]: Text contrast in heatmap: middle 35% energy range uses dark text, extremes use white text
 - [Phase 04-distribution-polish]: Export wrapper div (title + chart + attribution) used for ALL chart types via html-to-image — simplest approach avoiding need to expose Plotly internal refs via bindable props
 - [Phase 04-distribution-polish]: OG images generated at content-generation time via sharp SVG-to-PNG, committed as static assets to platform/static/og/
+- [Phase 06-distribution-bug-fixes]: CI verify path build/methodology/index.html is already correct — plan's claim that it was wrong was incorrect; no change made
+- [Phase 06-distribution-bug-fixes]: PLOTLY_SLUGS as ReadonlySet<string> with $derived chartExportType is the canonical pattern for slug-conditional chart behaviour
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T01:08:24.647Z
-Stopped at: Completed 04-distribution-polish plan 02 (permalink routes, embed pages, distribution components)
+Last session: 2026-03-27T00:30:29.915Z
+Stopped at: Completed 06-distribution-bug-fixes plan 01 (timeseries permalink progress, slug-aware export type)
 Resume file: None

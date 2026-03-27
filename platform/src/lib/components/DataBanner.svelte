@@ -10,9 +10,8 @@
 	<aside class="data-banner" role="note" aria-label="Preview data notice">
 		<span class="banner-icon" aria-hidden="true">&#9888;</span>
 		<div class="banner-content">
-			<strong>Preview Data</strong> - This site currently uses simulated data modelled on the llenergymeasure
-			measurement schema. Real measurements are in progress. All trends and ratios are realistic but not
-			yet empirically verified.
+			<strong>Real Measurements (v1)</strong> - This site uses 37 experiments measured on an NVIDIA
+			A100-PCIE-40GB GPU using the llenergymeasure benchmark protocol. Data collected 2026-03-26.
 		</div>
 	</aside>
 {/if}

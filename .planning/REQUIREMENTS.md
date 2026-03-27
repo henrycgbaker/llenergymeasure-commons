@@ -21,7 +21,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **VIZ-01**: User sees a 2D topographic heatmap of the configuration landscape (axes = config params, colour = energy)
 - [x] **VIZ-02**: User can interact with heatmap (hover for details, zoom, select regions)
 - [x] **VIZ-03**: User sees animated power timeseries comparing configurations side-by-side (e.g. fp32 vs fp16)
-- [ ] **VIZ-04**: User can trigger and control timeseries animation (play/pause, scrub)
+- [x] **VIZ-04**: User can trigger and control timeseries animation (play/pause, scrub)
 - [x] **VIZ-05**: User sees a 3D surface visualisation (loss-landscape style) of the configuration space
 - [x] **VIZ-06**: User can rotate and zoom the 3D surface with mouse/touch
 - [x] **VIZ-07**: User sees a PCA-reduced 3D projection of all configuration dimensions
@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **DIST-01**: Every chart has a stable permalink URL
 - [x] **DIST-02**: User can copy iframe embed code for any chart
-- [ ] **DIST-03**: User can download any chart as PNG or SVG
+- [x] **DIST-03**: User can download any chart as PNG or SVG
 - [x] **DIST-04**: User can copy a BibTeX or APA citation for the platform and individual charts
 
 ### Design & Accessibility
@@ -97,7 +97,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VIZ-01 | Phase 2 | Complete |
 | VIZ-02 | Phase 2 | Complete |
 | VIZ-03 | Phase 2 | Complete |
-| VIZ-04 | Phase 6 | Pending |
+| VIZ-04 | Phase 6 | Complete |
 | VIZ-05 | Phase 3 | Complete |
 | VIZ-06 | Phase 3 | Complete |
 | VIZ-07 | Phase 3 | Complete |
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-08 | Phase 5 | Pending |
 | DIST-01 | Phase 4 | Complete |
 | DIST-02 | Phase 4 | Complete |
-| DIST-03 | Phase 6 | Pending |
+| DIST-03 | Phase 6 | Complete |
 | DIST-04 | Phase 4 | Complete |
 | DESG-01 | Phase 2 | Complete |
 | DESG-02 | Phase 2 | Complete |
