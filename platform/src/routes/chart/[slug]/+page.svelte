@@ -28,6 +28,9 @@
 	const slug = $derived(data.slug as ChartSlug);
 	const meta = $derived(CHART_META[slug]);
 
+	const PLOTLY_SLUGS: ReadonlySet<string> = new Set(['surface', 'pca']);
+	const chartExportType = $derived<'svg' | 'plotly'>(PLOTLY_SLUGS.has(slug) ? 'plotly' : 'svg');
+
 	const siteUrl: string =
 		(import.meta.env.VITE_SITE_URL as string | undefined) ?? 'https://llem-commons.hertie-school.org';
 	const ogImage = $derived(`${siteUrl}/og/${slug}-preview.png`);
@@ -133,7 +136,7 @@
 
 	<div class="chart-controls">
 		<ChartExportButton
-			chartType="svg"
+			chartType={chartExportType}
 			exportContainerRef={exportContainer}
 			{slug}
 			chartTitle={meta.title}
