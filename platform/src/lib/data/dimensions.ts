@@ -12,8 +12,7 @@ const DIMENSION_LABELS: Record<string, string> = {
 
 const DEFAULT_AXES: Record<string, { x: string; y: string }> = {
 	pytorch: { x: 'precision', y: 'batch_size' },
-	vllm: { x: 'enforce_eager', y: 'max_num_seqs' },
-	tensorrt: { x: 'precision', y: 'batch_size' }
+	vllm: { x: 'enforce_eager', y: 'max_num_seqs' }
 };
 
 /**

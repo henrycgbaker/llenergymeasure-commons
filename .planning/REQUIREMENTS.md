@@ -31,7 +31,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Data & Methodology
 
 - [ ] **DATA-01**: Site uses realistic fixture data matching the llenergymeasure ExperimentResult schema
-- [ ] **DATA-02**: Fixture data covers Llama models across 3 backends (PyTorch, vLLM, TensorRT) with configuration sweeps on A100
+- [ ] **DATA-02**: Fixture data covers Qwen/Qwen2.5-0.5B across 2 backends (PyTorch, vLLM) with configuration sweeps on A100-PCIE-40GB
 - [x] **DATA-03**: User can access a methodology page explaining how measurements are taken
 - [x] **DATA-04**: Every chart links to the methodology page via "How was this measured?"
 - [x] **DATA-05**: User sees relatable energy equivalences alongside every energy figure

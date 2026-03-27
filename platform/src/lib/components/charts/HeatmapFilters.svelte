@@ -34,8 +34,7 @@
 
 	const backendLabels: Record<string, string> = {
 		pytorch: 'PyTorch',
-		vllm: 'vLLM',
-		tensorrt: 'TensorRT'
+		vllm: 'vLLM'
 	};
 
 	// Dimensions available for the selected backend (excluding backend itself)
