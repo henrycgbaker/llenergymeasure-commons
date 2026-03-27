@@ -25,7 +25,7 @@
 		<Section title="The short version">
 			<p>
 				We measure the energy consumed when a large language model (LLM) generates text. The same
-				model on the same GPU can draw up to <strong>8 times more energy</strong> depending on four configuration
+				model on the same GPU can draw up to <strong>60 times more energy</strong> depending on configuration
 				choices: numerical precision, batch size, inference backend, and attention implementation. This
 				site presents evidence for that claim.
 			</p>
@@ -96,19 +96,19 @@
 						The number of prompts processed simultaneously in a single GPU pass. Larger batches
 						amortise the fixed cost of loading model weights across more requests, dramatically
 						reducing energy per output token. Batch size 1 (processing one prompt at a time) is the
-						worst-case scenario for energy efficiency. Batch size 128 can be 2-3 times more
+						worst-case scenario for energy efficiency. Batch size 16 can be significantly more
 						efficient per token than batch size 1.
 					</dd>
 				</div>
 				<div class="config-item">
 					<dt>Inference backend</dt>
 					<dd>
-						The software stack that executes the model. We test three backends:
-						<strong>PyTorch</strong> (the standard research framework, highest baseline energy),
-						<strong>vLLM</strong> (production-optimised serving with PagedAttention memory
-						management), and <strong>TensorRT-LLM</strong> (NVIDIA's compiled inference engine, lowest
-						energy in most configurations). Backend choice can account for a 30-50% difference in energy
-						consumption for the same model and precision.
+						The software stack that executes the model. We test two backends:
+						<strong>PyTorch</strong> (the standard research framework, with per-request batch
+						inference) and <strong>vLLM</strong> (production-optimised serving with PagedAttention
+						memory management and continuous batching). Backend choice is the single largest factor
+						in energy consumption — vLLM achieves up to 5x lower energy per token than the best
+						PyTorch configuration at the same precision.
 					</dd>
 				</div>
 				<div class="config-item">
@@ -123,6 +123,12 @@
 					</dd>
 				</div>
 			</dl>
+
+			<p>
+				Note: vLLM uses server-level configuration dimensions (maximum concurrent sequences,
+				chunked prefill, eager vs. graph mode) rather than per-request batch size. These
+				dimensions are specific to serving frameworks and do not have direct PyTorch equivalents.
+			</p>
 		</Section>
 
 		<Section title="How we measure">
@@ -162,9 +168,10 @@
 				</p>
 				<p>
 					Each experiment produces an <code>ExperimentResult</code> object conforming to the llenergymeasure
-					v2 schema. This includes: the energy metrics described above, a full environment snapshot (GPU
-					model, driver version, CUDA version, Python version, library versions), the exact configuration
-					hash, and optional Parquet-format power timeseries sidecars for detailed temporal analysis.
+					v2 schema. This includes: the energy metrics described above, an environment snapshot (GPU
+					model, driver version, CUDA version, Python version, library versions) recorded at
+					measurement time, the exact configuration hash, and optional Parquet-format power timeseries
+					sidecars for detailed temporal analysis.
 				</p>
 				<p>
 					The <code>measurement_config_hash</code> field provides a stable identifier for each unique
@@ -176,11 +183,9 @@
 
 		<Section title="Hardware">
 			<p>
-				The data on this site was collected on a single NVIDIA A100 80GB GPU. The A100 is a high-end
-				data-centre GPU representative of the hardware used for production LLM inference in cloud
-				environments. Its 400W thermal design power (TDP) and 80GB of HBM2e memory make it capable
-				of running large models at full precision without the memory constraints that affect smaller
-				GPUs.
+				The data on this site was collected on a single NVIDIA A100-PCIE-40GB GPU (40 GB VRAM, 250 W
+				power limit, CUDA 12.2). The A100 is a data-centre GPU representative of the hardware used
+				for production LLM inference in cloud environments.
 			</p>
 			<p>
 				Measurements on consumer GPUs (RTX 4090, RTX 3090) or other data-centre GPUs (H100, A10)
@@ -198,24 +203,25 @@
 					<div class="coverage-item covered">
 						<h4>What is covered</h4>
 						<ul>
-							<li>Model: <strong>Llama 3 8B Instruct</strong> (Meta)</li>
-							<li>Hardware: <strong>NVIDIA A100 80GB</strong></li>
-							<li>Precisions: <strong>fp32, fp16, bf16, int8</strong></li>
-							<li>Batch sizes: <strong>1, 8, 32, 64, 128</strong></li>
-							<li>Backends: <strong>PyTorch, vLLM, TensorRT-LLM</strong></li>
-							<li>Attention: <strong>eager, SDPA, Flash Attention v2</strong></li>
-							<li>Total configurations: <strong>~180 unique combinations</strong></li>
+							<li>Model: <strong>Qwen/Qwen2.5-0.5B</strong> (Alibaba)</li>
+							<li>Hardware: <strong>NVIDIA A100-PCIE-40GB</strong></li>
+							<li>PyTorch precisions: <strong>bf16, fp16</strong></li>
+							<li>PyTorch batch sizes: <strong>1, 4, 8, 16</strong></li>
+							<li>Backends: <strong>PyTorch, vLLM</strong></li>
+							<li>Attention: <strong>eager, SDPA, Flash Attention v2</strong> (PyTorch)</li>
+							<li>Total configurations: <strong>37 unique experiments</strong></li>
 						</ul>
 					</div>
 
 					<div class="coverage-item not-covered">
 						<h4>What is not covered</h4>
 						<ul>
-							<li>Other models (Llama 3 70B, Mistral, Gemma, etc.)</li>
-							<li>Other GPU hardware (H100, RTX series, AMD)</li>
+							<li>Other models (Llama, Mistral, Gemma, larger Qwen variants)</li>
+							<li>Other GPU hardware (H100, A100-80GB, RTX series, AMD)</li>
+							<li>Other backends (TensorRT-LLM, ONNX Runtime)</li>
 							<li>Multi-GPU configurations</li>
 							<li>Training workloads (inference only)</li>
-							<li>Quantisation methods beyond int8 (GPTQ, AWQ, etc.)</li>
+							<li>Quantisation methods (GPTQ, AWQ, int8)</li>
 							<li>Speculative decoding and KV-cache strategies</li>
 							<li>Network latency or serving overhead</li>
 						</ul>
@@ -224,11 +230,10 @@
 			</div>
 
 			<div class="fixture-notice">
-				<strong>Current data status: Preview (simulated).</strong> The data on this site is simulated
-				fixture data modelled on the llenergymeasure schema, designed to demonstrate realistic magnitudes
-				and directional trends. The 8x worst-to-best ratio is calibrated to match expected empirical results.
-				Real measurements on physical hardware are in progress and will replace this fixture data when
-				available.
+				<strong>Current data status: Real measurements (v1, 2026-03-26).</strong> The data on this
+				site comprises 37 experiments measured on a single NVIDIA A100-PCIE-40GB GPU using the
+				llenergymeasure benchmark protocol. Measurements are reproducible by running the same
+				configuration sweep with the open-source llenergymeasure tool.
 			</div>
 		</Section>
 
@@ -255,8 +260,8 @@
 						not included. Multiply by your facility's PUE for wall-socket energy.
 					</li>
 					<li>
-						<strong>Snapshot in time.</strong> Software backends are updated frequently. vLLM and TensorRT-LLM
-						efficiency improvements in future releases would reduce the measured values for those backends.
+						<strong>Snapshot in time.</strong> Software backends are updated frequently. vLLM
+						efficiency improvements in future releases would change the measured values for that backend.
 					</li>
 				</ul>
 			</ExpandableDetail>
