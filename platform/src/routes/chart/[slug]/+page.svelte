@@ -38,7 +38,7 @@
 		energyRange: null
 	});
 
-	let timeseriesProgress = $state(0);
+	let timeseriesProgress = $state(1);
 
 	// ── Derived filtered data ─────────────────────────────────────────────
 	const filteredResults = $derived(applyExplorerFilters(data.allResults, filterState));
