@@ -18,9 +18,11 @@ closes the gap between "looks done" and "is citable by a policy team."
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Data contract, fixture data, narrative arc, design system, infrastructure (completed 2026-03-20)
-- [ ] **Phase 2: Scroll Narrative** - Five-beat scroll story with primary visualisations (heatmap + timeseries)
+- [x] **Phase 2: Scroll Narrative** - Five-beat scroll story with primary visualisations (heatmap + timeseries) (completed 2026-03-23)
 - [x] **Phase 3: Explorer + Advanced Visualisations** - Interactive explorer, 3D surface, PCA projection, parallel coordinates (completed 2026-03-25)
 - [x] **Phase 4: Distribution + Polish** - Embeds, citations, data downloads, accessibility and performance audit (completed 2026-03-26)
+- [ ] **Phase 5: Real Data Alignment** - Update narrative copy, methodology page, and types to match real measurement data (gap closure)
+- [ ] **Phase 6: Distribution Bug Fixes** - Fix timeseries permalink, SVG export, and CI verify step (gap closure)
 
 ## Phase Details
 
@@ -65,14 +67,14 @@ see the core claim made visually, and arrive at actionable policy conclusions - 
      fp16), and the user can play, pause, and scrub the animation.
   5. Every chart has a visible "How was this measured?" link pointing to the methodology
      page, and the narrative works end-to-end on a mobile touch device.
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
-- [ ] 02-01-PLAN.md -- Test infrastructure + TypeScript types + data transform layer (TDD)
-- [ ] 02-02-PLAN.md -- GSAP/D3 install + scroll infrastructure + Beat 1 hook + Beat 2 reveal heatmap
-- [ ] 02-03-PLAN.md -- Interactive heatmap (Beat 3) with filters, tooltip, detail panel
-- [ ] 02-04-PLAN.md -- Power timeseries (Beat 4) + Beat 5 policy sections + full wiring
-- [ ] 02-05-PLAN.md -- Responsive polish + cross-cutting requirements + human verification
+- [x] 02-01-PLAN.md -- Test infrastructure + TypeScript types + data transform layer (TDD)
+- [x] 02-02-PLAN.md -- GSAP/D3 install + scroll infrastructure + Beat 1 hook + Beat 2 reveal heatmap
+- [x] 02-03-PLAN.md -- Interactive heatmap (Beat 3) with filters, tooltip, detail panel
+- [x] 02-04-PLAN.md -- Power timeseries (Beat 4) + Beat 5 policy sections + full wiring
+- [x] 02-05-PLAN.md -- Responsive polish + cross-cutting requirements + human verification
 
 ### Phase 3: Explorer + Advanced Visualisations
 **Goal**: A user who wants to go deeper than the scroll narrative can explore the full
@@ -93,10 +95,10 @@ download what they need.
 **Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 03-01-PLAN.md -- Data transforms, types, PCA build script, download utilities (TDD)
-- [ ] 03-02-PLAN.md -- Explorer page scaffold, tabs, filters, downloads, heatmap tab
-- [ ] 03-03-PLAN.md -- Surface3D + PCA Projection Plotly WebGL chart components
-- [ ] 03-04-PLAN.md -- Parallel coordinates D3 chart, cross-chart filter sync, Beat 5 CTA
+- [x] 03-01-PLAN.md -- Data transforms, types, PCA build script, download utilities (TDD)
+- [x] 03-02-PLAN.md -- Explorer page scaffold, tabs, filters, downloads, heatmap tab
+- [x] 03-03-PLAN.md -- Surface3D + PCA Projection Plotly WebGL chart components
+- [x] 03-04-PLAN.md -- Parallel coordinates D3 chart, cross-chart filter sync, Beat 5 CTA
 
 ### Phase 4: Distribution + Polish
 **Goal**: Every chart on the site is independently shareable, citable, and accessible -
@@ -115,18 +117,59 @@ source in a report without contacting the authors.
 **Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 04-01-PLAN.md -- Chart metadata registry, citation generation, image export utilities (TDD)
-- [ ] 04-02-PLAN.md -- Chart permalink pages, embed pages, distribution controls
-- [ ] 04-03-PLAN.md -- Accessibility audit: colourblind verification, alt text, keyboard navigation
+- [x] 04-01-PLAN.md -- Chart metadata registry, citation generation, image export utilities (TDD)
+- [x] 04-02-PLAN.md -- Chart permalink pages, embed pages, distribution controls
+- [x] 04-03-PLAN.md -- Accessibility audit: colourblind verification, alt text, keyboard navigation
+
+### Phase 5: Real Data Alignment
+**Goal**: Align all narrative copy, methodology page content, and TypeScript types with the
+real measurement data introduced in commit ac1e4fd (37 records, pytorch + vllm backends only).
+**Depends on**: Phases 1-4
+**Requirements**: NARR-01, NARR-03, NARR-05, DATA-01, DATA-02, DATA-08
+**Gap Closure:** Closes data-copy mismatch gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. All energy ratio claims in narrative copy, page title, and meta description are derived
+     from actual data — no hardcoded "8x" when the real ratio differs.
+  2. TensorRT references are removed or replaced in scroll narrative, filter labels, and
+     methodology page — only backends present in the data (pytorch, vllm) are named.
+  3. Beat 5 deployment bar chart applies efficiency colour to the actual best-performing
+     backend in the data, not to a hardcoded "tensorrt" string.
+  4. Methodology page accurately states the record count, backend list, and worst-to-best
+     ratio matching the current fixture data.
+  5. TypeScript ExperimentResult type matches the shape of real fixture records (no phantom
+     fields like environment_snapshot).
+
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md -- Fix page metadata, narrative copy, methodology page, and filter labels for real data
+
+### Phase 6: Distribution Bug Fixes
+**Goal**: Fix broken distribution flows: timeseries chart permalink, SVG export button for
+Plotly charts, and CI build verification path.
+**Depends on**: Phases 1-4
+**Requirements**: VIZ-04, DIST-03
+**Gap Closure:** Closes broken flow gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. The /chart/timeseries permalink page renders with curves fully revealed and
+     TimeseriesControls visible — a user can play, pause, and scrub without needing to scroll.
+  2. The "Download SVG" button is hidden (or absent) for Plotly chart types (surface, pca)
+     where SVG export is not supported; PNG download still works for all 5 chart types.
+  3. The CI verify step checks the correct build output path (build/methodology.html, not
+     build/methodology/index.html).
+
+Plans: 0/1 plans
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete   | 2026-03-20 |
-| 2. Scroll Narrative | 4/5 | In Progress|  |
+| 2. Scroll Narrative | 5/5 | Complete   | 2026-03-23 |
 | 3. Explorer + Advanced Visualisations | 4/4 | Complete   | 2026-03-25 |
 | 4. Distribution + Polish | 3/3 | Complete   | 2026-03-26 |
+| 5. Real Data Alignment | 0/1 | Pending    |  |
+| 6. Distribution Bug Fixes | 0/1 | Pending    |  |
