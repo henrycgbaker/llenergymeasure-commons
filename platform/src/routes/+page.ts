@@ -53,8 +53,7 @@ export const load: PageLoad = async ({ fetch }) => {
 			) ?? candidates[0];
 		const labelMap: Record<string, string> = {
 			pytorch: 'PyTorch',
-			vllm: 'vLLM',
-			tensorrt: 'TensorRT'
+			vllm: 'vLLM'
 		};
 		return {
 			backend,
@@ -62,6 +61,12 @@ export const load: PageLoad = async ({ fetch }) => {
 			label: labelMap[backend] ?? backend
 		};
 	});
+
+	// Beat 5: derive best backend (lowest energy per token)
+	const bestBackend =
+		deploymentData.length > 0
+			? deploymentData.reduce((a, b) => (a.energyPerToken < b.energyPerToken ? a : b)).backend
+			: '';
 
 	// Min/max energy range for regulation lever
 	const allEnergies = allResults.map((r) => r.avg_energy_per_token_j);
@@ -80,6 +85,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		worstResult,
 		bestResult,
 		deploymentData,
+		bestBackend,
 		minEnergyGlobal,
 		maxEnergyGlobal,
 		globalRatio,
