@@ -164,17 +164,17 @@
 </script>
 
 <svelte:head>
-	<title>LLM Energy Commons — Same model. Same GPU. 8x energy difference.</title>
+	<title>LLM Energy Commons — Same model. Same GPU. {data.energyRatio}x energy difference.</title>
 	<meta
 		name="description"
-		content="Same model, same GPU — up to 8x energy difference from configuration choices alone. Evidence-based guidance for AI energy policy."
+		content="Same model, same GPU — up to {data.energyRatio}x energy difference from configuration choices alone. Evidence-based guidance for AI energy policy."
 	/>
 </svelte:head>
 
 <ScrollNarrative>
 	<!-- ========================================================
 	     Beat 1: Hook
-	     Full-viewport dark section, animated 8x counter
+	     Full-viewport dark section, animated ratio counter
 	     ======================================================== -->
 	<NarrativeSection id="beat-1" fullViewport>
 		<div class="beat-1">
@@ -269,7 +269,7 @@
 		<div class="beat-3__intro">
 			<h2 class="beat-3__heading">Now explore for yourself</h2>
 			<p class="beat-3__body">
-				Filter by inference backend (PyTorch, vLLM, TensorRT) and attention implementation. Click
+				Filter by inference backend (PyTorch, vLLM) and attention implementation. Click
 				any cell to see the full configuration breakdown. The {data.energyRatio}x gap holds across
 				every combination.
 			</p>
@@ -379,7 +379,7 @@
 				<ExpandableDetail title="Technical depth: what benchmarking requires">
 					<p class="lever-note">
 						Standardised efficiency benchmarking requires three components: a fixed hardware
-						reference (e.g., an A100 80GB), a canonical inference workload (fixed prompt length,
+						reference (e.g., an A100 40GB), a canonical inference workload (fixed prompt length,
 						batch size, output tokens), and a reporting format compatible with existing procurement
 						documentation. The llenergymeasure schema provides a machine-readable starting point.
 					</p>
@@ -403,8 +403,8 @@
 
 				<p class="lever__body">
 					Research teams default to PyTorch for reproducibility. Production systems often inherit
-					those defaults. Switching to vLLM or TensorRT at the same precision reduces energy per
-					token materially — with no change to model weights or hardware.
+					those defaults. Switching to vLLM at the same precision reduces energy per token
+					materially — with no change to model weights or hardware.
 				</p>
 
 				<!-- Backend comparison bar chart -->
@@ -417,7 +417,7 @@
 								<div
 									class="bar-fill"
 									class:bar-fill--worst={item.backend === 'pytorch'}
-									class:bar-fill--best={item.backend === 'tensorrt'}
+									class:bar-fill--best={item.backend === data.bestBackend}
 									style="width: {deploymentMax > 0
 										? (item.energyPerToken / deploymentMax) * 100
 										: 0}%"
@@ -430,10 +430,10 @@
 
 				<ExpandableDetail title="Technical depth: backend efficiency differences">
 					<p class="lever-note">
-						vLLM and TensorRT achieve efficiency gains through continuous batching, kernel fusion,
-						and memory management optimisations absent in vanilla PyTorch. These gains compound: at
-						higher batch sizes, TensorRT's fused attention kernels substantially reduce memory
-						bandwidth pressure compared to eager or SDPA attention.
+						vLLM achieves efficiency gains through continuous batching, PagedAttention memory
+						management, and kernel optimisations absent in vanilla PyTorch. These gains compound at
+						higher concurrency: vLLM's server-level scheduling amortises GPU overhead across
+						concurrent sequences more effectively than per-request PyTorch inference.
 					</p>
 					<p class="lever-note">
 						Switching backends requires revalidating output quality at deployment — a one-time
@@ -461,7 +461,7 @@
 					belongs.
 				</p>
 
-				<!-- 8x cost framing -->
+				<!-- cost framing -->
 				<div class="procurement-callout">
 					<div class="procurement-callout__ratio">
 						<span class="procurement-callout__number wasteful">{data.energyRatio}x</span>
